@@ -1,0 +1,7 @@
+{"type":"server-started","port":64619,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:64619","screen_dir":"/Users/tuyukai/go/src/github.com/cournot-dashboard/.superpowers/brainstorm/66299-1773385814"}
+{"type":"screen-added","file":"/Users/tuyukai/go/src/github.com/cournot-dashboard/.superpowers/brainstorm/66299-1773385814/architecture-overview.html"}
+{"type":"screen-added","file":"/Users/tuyukai/go/src/github.com/cournot-dashboard/.superpowers/brainstorm/66299-1773385814/auth-flow.html"}
+{"type":"screen-added","file":"/Users/tuyukai/go/src/github.com/cournot-dashboard/.superpowers/brainstorm/66299-1773385814/admin-api-spec.html"}
+{"type":"screen-added","file":"/Users/tuyukai/go/src/github.com/cournot-dashboard/.superpowers/brainstorm/66299-1773385814/admin-ui-mockup.html"}
+{"type":"screen-added","file":"/Users/tuyukai/go/src/github.com/cournot-dashboard/.superpowers/brainstorm/66299-1773385814/resolution-workflow.html"}
+{"type":"screen-added","file":"/Users/tuyukai/go/src/github.com/cournot-dashboard/.superpowers/brainstorm/66299-1773385814/waiting.html"}

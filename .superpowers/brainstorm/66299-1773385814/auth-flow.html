@@ -1,0 +1,208 @@
+<h2>Authentication Flow</h2>
+<p class="subtitle">Wallet connect → signature → JWT token lifecycle</p>
+
+<div class="mockup">
+  <div class="mockup-header">Login Sequence</div>
+  <div class="mockup-body" style="padding: 24px; font-family: monospace; font-size: 12px; line-height: 1.7;">
+    <pre style="white-space: pre; overflow-x: auto; color: #e0e0e0;">
+ Browser (wagmi)              Next.js Proxy             Cournot Backend
+ ──────────────              ─────────────             ───────────────
+       │                           │                          │
+  1. User clicks                   │                          │
+     "Connect Wallet"              │                          │
+       │                           │                          │
+  2. wagmi useConnect()            │                          │
+     → MetaMask popup              │                          │
+     → User approves               │                          │
+     → Get address                 │                          │
+       │                           │                          │
+  3. POST /api/proxy/auth/challenge                           │
+     { address: "0xABC..." }  ────►│                          │
+       │                           │  POST /auth/challenge    │
+       │                           │  { address: "0xABC..." } │
+       │                           │ ────────────────────────► │
+       │                           │                          │
+       │                           │  { challenge:            │
+       │                           │    "Sign this message    │
+       │                           │     to login to Cournot  │
+       │                           │     Dashboard\n          │
+       │                           │     Nonce: a1b2c3\n      │
+       │                           │     Timestamp: 2026-...  │
+       │                           │     Expires: 300s"       │
+       │                      ◄────│  }                       │
+       │  ◄────────────────────────│                          │
+       │                           │                          │
+  4. wagmi useSignMessage()        │                          │
+     → MetaMask sign popup         │                          │
+     → User signs                  │                          │
+     → Get signature               │                          │
+       │                           │                          │
+  5. POST /api/proxy/auth/verify                              │
+     { address: "0xABC...",   ────►│                          │
+       signature: "0x123...",      │  POST /auth/verify       │
+       challenge: "Sign..." }      │  { address, signature,   │
+       │                           │    challenge }           │
+       │                           │ ────────────────────────► │
+       │                           │                          │
+       │                           │  Backend:                │
+       │                           │  - ecrecover(sig) →addr  │
+       │                           │  - verify nonce+timestamp│
+       │                           │  - lookup role for addr  │
+       │                           │  - generate JWT          │
+       │                           │                          │
+       │                           │  { token: "eyJ...",      │
+       │                           │    address: "0xABC...",  │
+       │                           │    role: "admin",        │
+       │                      ◄────│    expires_at: "..." }   │
+       │  ◄────────────────────────│                          │
+       │                           │                          │
+  6. Store in AuthContext           │                          │
+     + localStorage:               │                          │
+     - token (JWT)                 │                          │
+     - address                     │                          │
+     - role                        │                          │
+       │                           │                          │
+  7. All subsequent requests       │                          │
+     include header:               │                          │
+     Authorization: Bearer eyJ...  │                          │
+       │                           │                          │
+    </pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Auth API Spec</h3>
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <span style="background: #22c55e; color: #000; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">POST</span>
+        <code style="font-size: 14px;">/auth/challenge</code>
+      </div>
+      <p style="margin: 0 0 8px 0; font-size: 13px; color: #999;">Request a challenge message for wallet signature. Contains nonce + timestamp to prevent replay.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <span class="label">Request</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 12px; margin: 4px 0 0 0;">{ "address": "0xABC..." }</pre>
+        </div>
+        <div>
+          <span class="label">Response</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 12px; margin: 4px 0 0 0;">{
+  "challenge": "Sign this message...",
+  "expires_at": "2026-03-13T..."
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <span style="background: #22c55e; color: #000; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">POST</span>
+        <code style="font-size: 14px;">/auth/verify</code>
+      </div>
+      <p style="margin: 0 0 8px 0; font-size: 13px; color: #999;">Submit signed challenge. Backend recovers address from signature, verifies nonce, returns JWT + role.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <span class="label">Request</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 12px; margin: 4px 0 0 0;">{
+  "address": "0xABC...",
+  "signature": "0x123...",
+  "challenge": "Sign this..."
+}</pre>
+        </div>
+        <div>
+          <span class="label">Response</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 12px; margin: 4px 0 0 0;">{
+  "token": "eyJhbG...",
+  "address": "0xABC...",
+  "role": "admin" | "user",
+  "expires_at": "2026-03-14T..."
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <span style="background: #3b82f6; color: #fff; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">GET</span>
+        <code style="font-size: 14px;">/auth/me</code>
+      </div>
+      <p style="margin: 0 0 8px 0; font-size: 13px; color: #999;">Validate existing JWT and return current session. Used on page reload to restore auth state.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <span class="label">Header</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 12px; margin: 4px 0 0 0;">Authorization: Bearer eyJhbG...</pre>
+        </div>
+        <div>
+          <span class="label">Response</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 12px; margin: 4px 0 0 0;">{
+  "address": "0xABC...",
+  "role": "admin" | "user",
+  "expires_at": "2026-03-14T..."
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <span style="background: #22c55e; color: #000; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">POST</span>
+        <code style="font-size: 14px;">/auth/logout</code>
+      </div>
+      <p style="margin: 0 0 8px 0; font-size: 13px; color: #999;">Invalidate JWT server-side. Frontend also clears localStorage and disconnects wallet.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <span class="label">Header</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 12px; margin: 4px 0 0 0;">Authorization: Bearer eyJhbG...</pre>
+        </div>
+        <div>
+          <span class="label">Response</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 12px; margin: 4px 0 0 0;">{ "ok": true }</pre>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Test Mode (NEXT_PUBLIC_ENABLE_TEST_AUTH=true)</h3>
+  <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; padding: 20px;">
+    <p style="margin: 0 0 12px 0; font-size: 14px;">When enabled, the "Connect Wallet" button bypasses MetaMask entirely:</p>
+    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 2;">
+      <li>Auto-sets address to <code>0xTEST...1234</code></li>
+      <li>Skips challenge/signature flow</li>
+      <li>Calls <code>/auth/verify</code> with a special test signature</li>
+      <li>Backend recognizes test mode and returns admin JWT</li>
+      <li>All subsequent API calls work normally with the test JWT</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Frontend Auth State</h3>
+  <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+    <pre style="font-size: 12px; color: #e0e0e0; margin: 0;">
+AuthContext provides:
+├── isConnected: boolean      ← wagmi wallet connected
+├── isAuthenticated: boolean  ← JWT token valid
+├── address: string | null    ← wallet address
+├── role: "admin" | "user" | null
+├── token: string | null      ← JWT for API calls
+├── login()                   ← trigger challenge → sign → verify
+├── logout()                  ← clear token + disconnect wallet
+└── isLoading: boolean        ← auth flow in progress
+
+localStorage keys:
+├── "cournot_auth_token"      ← JWT string
+├── "cournot_auth_address"    ← address for display
+└── "cournot_auth_role"       ← role for quick UI checks
+
+On page load:
+1. Check localStorage for token
+2. If found → GET /auth/me to validate
+3. If valid → restore AuthContext
+4. If invalid → clear localStorage, show disconnected
+    </pre>
+  </div>
+</div>

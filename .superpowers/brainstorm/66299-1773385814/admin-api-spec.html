@@ -1,0 +1,222 @@
+<h2>Admin Market Management — API Spec</h2>
+<p class="subtitle">CRUD endpoints for admin-managed markets + resolution workflow</p>
+
+<div class="section">
+  <h3>Market Data Model</h3>
+  <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+    <pre style="font-size: 12px; color: #e0e0e0; margin: 0; line-height: 1.8;">
+AdminMarket {
+  id:              string       // server-generated UUID
+  title:           string       // "Will BTC hit $100k by June 2026?"
+  platform:        string       // "polymarket" | "kalshi" | "limitless" | "custom"
+  platform_url:    string?      // link to the market on the platform
+  description:     string       // detailed market description
+  question:        string       // the resolvable question (fed to PoR)
+
+  start_time:      ISO 8601     // when the market opens
+  end_time:        ISO 8601     // when the market closes for trading
+  resolve_time:    ISO 8601     // when the market should be resolved
+
+  status:          enum         // see status lifecycle below
+  alert_level:     enum         // "none" | "low" | "medium" | "high" | "critical"
+  alert_reason:    string?      // why the alert was triggered
+
+  resolution:      object?      // null until resolved, see below
+  por_result:      object?      // raw PoR RunSummary if triggered
+
+  created_by:      string       // admin address who added it
+  created_at:      ISO 8601
+  updated_at:      ISO 8601
+}
+
+Market Status Lifecycle:
+  ┌──────────┐    monitoring    ┌───────────┐    alert     ┌─────────┐
+  │  ACTIVE  │ ───────────────► │ MONITORING │ ──────────► │ ALERTED │
+  └──────────┘   (auto, after   └───────────┘  (backend    └────┬────┘
+   (just added)   start_time)                   detects)        │
+                                                           admin reviews
+                                                                │
+                                    ┌───────────┐          ┌────▼─────┐
+                                    │  EXPIRED   │          │ RESOLVING│
+                                    └───────────┘          └────┬─────┘
+                                  (past resolve_time,           │
+                                   no resolution)          confirmed
+                                                                │
+                                                           ┌────▼─────┐
+                                                           │ RESOLVED │
+                                                           └──────────┘
+
+Resolution Object (attached when status = RESOLVED):
+  resolution: {
+    outcome:         string     // "YES" | "NO" | "INVALID" | custom
+    confidence:      number     // 0-1, from PoR or admin override
+    resolved_by:     string     // admin address
+    resolved_at:     ISO 8601
+    method:          string     // "por" | "manual" | "por_modified"
+    por_root:        string?    // cryptographic PoR root if triggered
+    admin_notes:     string?    // admin's reasoning for override
+    evidence_summary: string?   // brief evidence summary
+  }
+</pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Admin Endpoints</h3>
+  <p style="font-size: 13px; color: #999; margin-bottom: 16px;">All admin endpoints require <code>Authorization: Bearer {jwt}</code> with role = "admin"</p>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+
+    <!-- LIST -->
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <span style="background: #3b82f6; color: #fff; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">GET</span>
+        <code style="font-size: 14px;">/admin/markets</code>
+      </div>
+      <p style="margin: 0 0 12px 0; font-size: 13px; color: #999;">List all admin-managed markets with filtering and pagination.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <span class="label">Query Params</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 11px; margin: 4px 0 0 0;">?status=ALERTED,MONITORING
+&alert_level=high,critical
+&platform=polymarket
+&page=1
+&page_size=20
+&sort=resolve_time
+&order=asc</pre>
+        </div>
+        <div>
+          <span class="label">Response</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 11px; margin: 4px 0 0 0;">{
+  "markets": [AdminMarket, ...],
+  "total": 42,
+  "page": 1,
+  "page_size": 20
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREATE -->
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <span style="background: #22c55e; color: #000; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">POST</span>
+        <code style="font-size: 14px;">/admin/markets</code>
+      </div>
+      <p style="margin: 0 0 12px 0; font-size: 13px; color: #999;">Add a new market to be monitored. Backend starts scanning after start_time.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <span class="label">Request Body</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 11px; margin: 4px 0 0 0;">{
+  "title": "BTC $100k by June",
+  "platform": "polymarket",
+  "platform_url": "https://...",
+  "description": "Whether...",
+  "question": "Will Bitcoin...",
+  "start_time": "2026-03-13T...",
+  "end_time": "2026-06-30T...",
+  "resolve_time": "2026-07-01T..."
+}</pre>
+        </div>
+        <div>
+          <span class="label">Response (201)</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 11px; margin: 4px 0 0 0;">{
+  "market": AdminMarket
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- GET ONE -->
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <span style="background: #3b82f6; color: #fff; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">GET</span>
+        <code style="font-size: 14px;">/admin/markets/:id</code>
+      </div>
+      <p style="margin: 0 0 8px 0; font-size: 13px; color: #999;">Get full market detail including alert info and PoR result if available.</p>
+      <div>
+        <span class="label">Response</span>
+        <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 11px; margin: 4px 0 0 0;">{ "market": AdminMarket }</pre>
+      </div>
+    </div>
+
+    <!-- UPDATE -->
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <span style="background: #eab308; color: #000; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">PUT</span>
+        <code style="font-size: 14px;">/admin/markets/:id</code>
+      </div>
+      <p style="margin: 0 0 8px 0; font-size: 13px; color: #999;">Update market metadata. Cannot update once status is RESOLVED.</p>
+      <div>
+        <span class="label">Request Body</span>
+        <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 11px; margin: 4px 0 0 0;">{ partial AdminMarket fields }</pre>
+      </div>
+    </div>
+
+    <!-- RESOLVE -->
+    <div style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; padding: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <span style="background: #8b5cf6; color: #fff; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">POST</span>
+        <code style="font-size: 14px;">/admin/markets/:id/resolve</code>
+        <span style="font-size: 11px; color: #8b5cf6; font-weight: bold;">★ KEY ENDPOINT</span>
+      </div>
+      <p style="margin: 0 0 12px 0; font-size: 13px; color: #999;">Submit final resolution. Triggers Lark notification + Telegram broadcast. This is the admin's confirmed result (may differ from PoR).</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <span class="label">Request Body</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 11px; margin: 4px 0 0 0;">{
+  "outcome": "YES",
+  "confidence": 0.95,
+  "method": "por_modified",
+  "por_root": "abc123...",
+  "admin_notes": "PoR said NO but
+    official source confirms YES",
+  "evidence_summary": "Reuters
+    reported on 2026-03-13..."
+}</pre>
+        </div>
+        <div>
+          <span class="label">Response</span>
+          <pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-size: 11px; margin: 4px 0 0 0;">{
+  "market": AdminMarket,
+  "notifications": {
+    "lark": true,
+    "telegram": true
+  }
+}</pre>
+        </div>
+      </div>
+      <div style="margin-top: 12px; font-size: 12px; color: #999;">
+        <strong>Backend side-effects:</strong>
+        <ul style="margin: 4px 0 0 0; padding-left: 16px;">
+          <li>Sets market status → RESOLVED</li>
+          <li>Sends Lark message: "Market [title] resolved as [outcome] by [address]"</li>
+          <li>Sends Telegram message to designated group with full evidence + proofs</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Error Responses</h3>
+  <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+    <pre style="font-size: 12px; color: #e0e0e0; margin: 0; line-height: 1.8;">
+Standard error envelope (matches existing pattern):
+{
+  "code": 4xxx,
+  "msg": "Human-readable error",
+  "data": null
+}
+
+Error codes:
+  4000  Bad request (validation error, missing fields)
+  4010  Unauthorized (no token or expired)
+  4030  Forbidden (valid token but not admin role)
+  4040  Not found (market ID doesn't exist)
+  4090  Conflict (market already resolved)
+  5000  Internal server error
+    </pre>
+  </div>
+</div>

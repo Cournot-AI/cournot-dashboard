@@ -1,0 +1,243 @@
+<h2>Resolution Workflow & Notification Pipeline</h2>
+<p class="subtitle">End-to-end flow from Lark alert to Telegram broadcast</p>
+
+<div class="mockup">
+  <div class="mockup-header">Complete Resolution Lifecycle</div>
+  <div class="mockup-body" style="padding: 24px; font-family: monospace; font-size: 12px; line-height: 1.7;">
+    <pre style="white-space: pre; overflow-x: auto; color: #e0e0e0;">
+ Admin adds market          Backend Monitor           Lark Channel
+ ──────────────────         ───────────────           ────────────
+       │                          │                        │
+  POST /admin/markets             │                        │
+  { title, question,              │                        │
+    start/end/resolve_time }      │                        │
+       │                          │                        │
+       │──────────────────────►   │                        │
+       │   status: ACTIVE         │                        │
+       │                          │                        │
+       │              (after start_time)                   │
+       │                          │                        │
+       │   status: MONITORING     │                        │
+       │                          │                        │
+       │              ┌───────────┴───────────┐            │
+       │              │ Existing monitor loop │            │
+       │              │ - web search scan     │            │
+       │              │ - signal detection    │            │
+       │              │ - source matching     │            │
+       │              └───────────┬───────────┘            │
+       │                          │                        │
+       │              (signal detected!)                   │
+       │                          │                        │
+       │   status: ALERTED        │   🔔 Alert message    │
+       │   alert_level: HIGH      │──────────────────────► │
+       │   alert_reason: "BTC..." │   "Market [title]     │
+       │                          │    may be resolvable.  │
+       │                          │    Signal: [reason]    │
+       │                          │    Dashboard: [url]"   │
+       │                          │                        │
+
+
+ Admin Dashboard              Existing Oracle API       Backend
+ ───────────────              ──────────────────        ───────
+       │                            │                      │
+  Admin sees Lark alert,            │                      │
+  opens /admin/markets/:id          │                      │
+       │                            │                      │
+       ├─── Option A: Run PoR ──────┤                      │
+       │                            │                      │
+       │  Call /step/resolve        │                      │
+       │  { question, providers,    │                      │
+       │    collectors }       ────►│                      │
+       │                            │  (full pipeline:     │
+       │                            │   prompt → collect   │
+       │                            │   → quality_check    │
+       │                            │   → audit → judge    │
+       │                            │   → bundle)          │
+       │                            │                      │
+       │  ◄─── RunSummary ─────────│                      │
+       │  { outcome: "YES",         │                      │
+       │    confidence: 0.94,       │                      │
+       │    por_root: "abc...",     │                      │
+       │    evidence_bundles,       │                      │
+       │    reasoning_steps }       │                      │
+       │                            │                      │
+       │  Display result in UI      │                      │
+       │  (reuse playground         │                      │
+       │   result components)       │                      │
+       │                            │                      │
+       ├─── Option B: Manual ───────┤                      │
+       │                            │                      │
+       │  Admin checks news sites   │                      │
+       │  manually, forms opinion   │                      │
+       │                            │                      │
+       ├────────────────────────────┤                      │
+       │                            │                      │
+  Admin reviews result              │                      │
+  (PoR or manual check)            │                      │
+       │                            │                      │
+       │  Three scenarios:          │                      │
+       │                            │                      │
+       │  1. PoR correct → accept   │                      │
+       │     method: "por"          │                      │
+       │                            │                      │
+       │  2. PoR wrong → override   │                      │
+       │     method: "por_modified" │                      │
+       │     admin_notes: "why..."  │                      │
+       │                            │                      │
+       │  3. No PoR → manual        │                      │
+       │     method: "manual"       │                      │
+       │     admin_notes: "why..."  │                      │
+       │                            │                      │
+       │  Click "Confirm & Notify"  │                      │
+       │                            │                      │
+  POST /admin/markets/:id/resolve   │                      │
+  { outcome, confidence,            │                      │
+    method, por_root?,         ─────┼─────────────────────►│
+    admin_notes?,                   │                      │
+    evidence_summary }              │                      │
+       │                            │                      │
+
+
+ Backend                      Lark Channel            Telegram Group
+ ───────                      ────────────            ──────────────
+       │                            │                      │
+  1. Update market status           │                      │
+     → RESOLVED                     │                      │
+       │                            │                      │
+  2. Send Lark notification         │                      │
+     ──────────────────────────────►│                      │
+     "✅ Market RESOLVED            │                      │
+      Title: [title]                │                      │
+      Outcome: [YES/NO]             │                      │
+      Confidence: [0.94]            │                      │
+      Method: [por/manual/modified] │                      │
+      Resolved by: [0xABC...1234]   │                      │
+      Time: [2026-03-13 15:00 UTC]" │                      │
+       │                            │                      │
+  3. Send Telegram message          │                      │
+     ─────────────────────────────────────────────────────►│
+     "🔮 Cournot Market Resolution  │                      │
+      ═══════════════════════       │                      │
+      Market: [title]               │                      │
+      Platform: [Polymarket]        │                      │
+      Outcome: YES                  │                      │
+      Confidence: 94%               │                      │
+                                    │                      │
+      Evidence:                     │                      │
+      • [source 1] - [excerpt]      │                      │
+      • [source 2] - [excerpt]      │                      │
+                                    │                      │
+      Reasoning:                    │                      │
+      [brief reasoning summary]     │                      │
+                                    │                      │
+      PoR Root: abc123...           │                      │
+      Resolved by: 0xABC...1234    │                      │
+      Method: por_modified          │                      │
+      Admin notes: [if any]"        │                      │
+       │                            │                      │
+    </pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>PoR Integration — Frontend Flow</h3>
+  <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+    <pre style="font-size: 12px; color: #e0e0e0; margin: 0; line-height: 1.8;">
+When admin clicks "Run Proof of Reasoning":
+
+1. Frontend calls existing /step/resolve via proxy
+   (same as playground single-call mode)
+   Request: {
+     question: market.question,
+     providers: [user-selected or default],
+     collectors: [user-selected or default]
+   }
+
+2. Show loading spinner with "Running PoR pipeline..."
+   (reuse playground pipeline-progress component)
+
+3. On success, display RunSummary:
+   - Outcome + confidence (prominently)
+   - Evidence bundles (collapsible, reuse detail components)
+   - Reasoning steps (collapsible)
+   - PoR root hash
+
+4. Pre-fill resolution form:
+   - Outcome → from RunSummary
+   - Confidence → from RunSummary
+   - por_root → from RunSummary
+   - method → "por" (changes to "por_modified" if admin edits)
+
+5. Admin can:
+   - Accept as-is → method stays "por"
+   - Modify outcome/confidence → method becomes "por_modified"
+   - Add admin_notes explaining override
+
+Note: No new API needed for PoR — reuses existing oracle endpoints.
+The ONLY new endpoint is POST /admin/markets/:id/resolve for
+the final confirmed submission.
+    </pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Frontend File Structure (New)</h3>
+  <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+    <pre style="font-size: 12px; color: #e0e0e0; margin: 0; line-height: 1.8;">
+New files to create:
+─────────────────
+
+lib/
+├── auth.ts                    # AuthContext, useAuth hook, login/logout logic
+├── wagmi-config.ts            # wagmi client config (chains, connectors)
+├── admin-api.ts               # Admin API client (markets CRUD, resolve)
+└── types.ts                   # + AdminMarket, Resolution types (extend)
+
+app/
+├── layout.tsx                 # + wrap with WagmiProvider + AuthProvider
+├── admin/
+│   ├── layout.tsx             # Admin role gate — redirects non-admins
+│   └── markets/
+│       ├── page.tsx           # Market list view
+│       ├── new/
+│       │   └── page.tsx       # Add market form
+│       └── [id]/
+│           └── page.tsx       # Market detail + resolve
+
+components/
+├── auth/
+│   ├── connect-button.tsx     # Wallet connect/disconnect in topbar
+│   └── auth-provider.tsx      # WagmiProvider + AuthContext wrapper
+├── admin/
+│   ├── market-table.tsx       # Market list table with filters
+│   ├── market-form.tsx        # Add/edit market form
+│   ├── market-detail.tsx      # Market info + alert display
+│   ├── por-trigger.tsx        # PoR run button + result display
+│   └── resolve-form.tsx       # Resolution confirmation form
+├── layout/
+│   ├── sidebar.tsx            # + admin nav items (conditional)
+│   └── topbar.tsx             # + connect button (replace placeholder)
+
+Modified files:
+───────────────
+.env.example                   # + NEXT_PUBLIC_ENABLE_TEST_AUTH
+package.json                   # + wagmi, viem, @tanstack/react-query
+app/api/proxy/[...path]/route.ts  # + forward Authorization header
+    </pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Environment Variables (Complete)</h3>
+  <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+    <pre style="font-size: 12px; color: #e0e0e0; margin: 0; line-height: 1.8;">
+# Existing
+UPSTREAM_API_BASE=https://dev-interface.cournot.ai/play/polymarket
+NEXT_PUBLIC_ENABLE_PLAYGROUND_LOCALHOST_MODE=false
+
+# New
+NEXT_PUBLIC_ENABLE_TEST_AUTH=false     # true → skip wallet, auto-admin login
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=  # WalletConnect v2 project ID (optional)
+    </pre>
+  </div>
+</div>

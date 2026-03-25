@@ -1,0 +1,94 @@
+<h2>System Architecture Overview</h2>
+<p class="subtitle">How the new auth, admin, and monitoring features integrate with the existing dashboard</p>
+
+<div class="mockup">
+  <div class="mockup-header">Full System Architecture</div>
+  <div class="mockup-body" style="padding: 24px; font-family: monospace; font-size: 13px; line-height: 1.6;">
+    <pre style="white-space: pre; overflow-x: auto; color: #e0e0e0;">
+┌─────────────────────────────────────────────────────────────────────┐
+│                         BROWSER                                     │
+│                                                                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────────────┐ │
+│  │  EVM Wallet   │  │  AuthContext  │  │  Existing Pages           │ │
+│  │  (MetaMask)   │──│  JWT + Role   │  │  /cases, /playground,     │ │
+│  │  via wagmi    │  │  localStorage │  │  /monitoring, /developer  │ │
+│  └──────────────┘  └──────┬───────┘  └───────────────────────────┘ │
+│                           │                                         │
+│                    ┌──────┴───────────────────────────┐             │
+│                    │  NEW: Admin Pages (role-gated)    │             │
+│                    │  /admin/markets      — CRUD list  │             │
+│                    │  /admin/markets/[id] — Detail     │             │
+│                    │  /admin/markets/new  — Add form   │             │
+│                    └──────┬───────────────────────────┘             │
+│                           │                                         │
+└───────────────────────────┼─────────────────────────────────────────┘
+                            │
+                    Next.js API Routes
+                    /api/proxy/[...path]
+                            │
+         ┌──────────────────┼──────────────────────────┐
+         │                  │                          │
+         ▼                  ▼                          ▼
+┌─────────────────┐ ┌────────────────┐  ┌──────────────────────────┐
+│  NEW Auth APIs  │ │ NEW Admin APIs │  │ Existing Oracle APIs      │
+│                 │ │                │  │                          │
+│ POST /auth/     │ │ GET  /admin/   │  │ /step/resolve            │
+│   challenge     │ │   markets      │  │ /step/prompt             │
+│ POST /auth/     │ │ POST /admin/   │  │ /step/collect            │
+│   verify        │ │   markets      │  │ /step/quality_check      │
+│ POST /auth/     │ │ GET  /admin/   │  │ /step/audit              │
+│   logout        │ │   markets/:id  │  │ /step/judge              │
+│ GET  /auth/me   │ │ PUT  /admin/   │  │ /step/bundle             │
+│                 │ │   markets/:id  │  │ /validate                │
+│                 │ │ POST /admin/   │  │ /capabilities            │
+│                 │ │   markets/:id/ │  │                          │
+│                 │ │   resolve      │  │                          │
+└─────────────────┘ └────────────────┘  └──────────────────────────┘
+         │                  │                          │
+         └──────────────────┼──────────────────────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              │  Cournot Backend           │
+              │  (interface.cournot.ai)    │
+              │                            │
+              │  ┌──────────────────────┐  │
+              │  │ Market Monitor Loop  │  │
+              │  │ (existing mechanism) │──┼──► Lark Channel (alerts)
+              │  └──────────────────────┘  │
+              │                            │
+              │  ┌──────────────────────┐  │
+              │  │ Resolution Handler   │──┼──► Lark (resolved notice)
+              │  │ POST /admin/markets/ │  │
+              │  │   :id/resolve        │──┼──► Telegram Group (evidence)
+              │  └──────────────────────┘  │
+              │                            │
+              │  ┌──────────────────────┐  │
+              │  │ User/Role DB         │  │
+              │  │ address → role map   │  │
+              │  └──────────────────────┘  │
+              └────────────────────────────┘
+    </pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Key Design Decisions</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px;">
+      <h4 style="margin: 0 0 8px 0; color: #8b5cf6;">Frontend Only Changes</h4>
+      <p style="margin: 0; font-size: 14px;">All new code lives in this Next.js repo. Backend gets API spec to implement independently.</p>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px;">
+      <h4 style="margin: 0 0 8px 0; color: #8b5cf6;">Auth Token in Headers</h4>
+      <p style="margin: 0; font-size: 14px;">JWT passed via Authorization: Bearer header through the existing proxy route.</p>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px;">
+      <h4 style="margin: 0 0 8px 0; color: #8b5cf6;">Role-Based Route Guard</h4>
+      <p style="margin: 0; font-size: 14px;">Admin layout component checks role before rendering. Non-admins see access denied.</p>
+    </div>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px;">
+      <h4 style="margin: 0 0 8px 0; color: #8b5cf6;">Reuse Existing Pipeline</h4>
+      <p style="margin: 0; font-size: 14px;">PoR trigger calls the same /step/resolve. Resolution confirmation uses a new dedicated endpoint.</p>
+    </div>
+  </div>
+</div>

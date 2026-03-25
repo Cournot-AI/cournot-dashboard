@@ -1,0 +1,311 @@
+<h2>Admin Dashboard — UI Design</h2>
+<p class="subtitle">Page layout, navigation, and key interaction flows</p>
+
+<!-- SIDEBAR -->
+<div class="section">
+  <h3>Sidebar Navigation (Updated)</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">Logged Out / Regular User</div>
+      <div class="mockup-body" style="padding: 0; width: 220px;">
+        <div style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <div style="font-weight: bold; font-size: 14px;">🔮 Cournot</div>
+        </div>
+        <div style="padding: 8px;">
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #999;">Overview</div>
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; background: rgba(139,92,246,0.15); color: #8b5cf6;">Cases</div>
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #999;">Monitoring</div>
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #999;">Playground</div>
+        </div>
+        <div style="padding: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <div style="padding: 4px 12px; font-size: 11px; color: #666; text-transform: uppercase;">Developer</div>
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #999;">API Reference</div>
+        </div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">Logged In as Admin</div>
+      <div class="mockup-body" style="padding: 0; width: 220px;">
+        <div style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <div style="font-weight: bold; font-size: 14px;">🔮 Cournot</div>
+        </div>
+        <div style="padding: 8px;">
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #999;">Overview</div>
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #999;">Cases</div>
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #999;">Monitoring</div>
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #999;">Playground</div>
+        </div>
+        <div style="padding: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <div style="padding: 4px 12px; font-size: 11px; color: #666; text-transform: uppercase;">Admin</div>
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; background: rgba(239,68,68,0.15); color: #ef4444;">🛡️ Market Monitor</div>
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #ef4444;">+ Add Market</div>
+        </div>
+        <div style="padding: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <div style="padding: 4px 12px; font-size: 11px; color: #666; text-transform: uppercase;">Developer</div>
+          <div style="padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #999;">API Reference</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR AUTH -->
+<div class="section" style="margin-top: 24px;">
+  <h3>Topbar — Auth Controls</h3>
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <div class="mockup">
+      <div class="mockup-header">Not Connected</div>
+      <div class="mockup-body" style="padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: bold;">🔮 Cournot</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 180px; height: 32px; background: rgba(255,255,255,0.08); border-radius: 6px;"></div>
+          <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.08); border-radius: 6px;"></div>
+          <button style="background: #8b5cf6; color: white; border: none; padding: 6px 16px; border-radius: 6px; font-size: 13px; cursor: pointer;">Connect Wallet</button>
+        </div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">Connected — Admin</div>
+      <div class="mockup-body" style="padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: bold;">🔮 Cournot</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 180px; height: 32px; background: rgba(255,255,255,0.08); border-radius: 6px;"></div>
+          <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.08); border-radius: 6px;"></div>
+          <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08); padding: 4px 12px 4px 8px; border-radius: 6px;">
+            <span style="background: #22c55e; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+            <span style="font-size: 13px; font-family: monospace;">0xABC...1234</span>
+            <span style="background: rgba(239,68,68,0.2); color: #ef4444; font-size: 10px; padding: 1px 6px; border-radius: 4px;">ADMIN</span>
+          </div>
+          <button style="background: transparent; color: #999; border: 1px solid rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">Disconnect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MARKET LIST PAGE -->
+<div class="section" style="margin-top: 24px;">
+  <h3>Admin Market Monitor — List View (/admin/markets)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Market Monitor Dashboard</div>
+    <div class="mockup-body" style="padding: 24px;">
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+          <h3 style="margin: 0;">Market Monitor</h3>
+          <p style="margin: 4px 0 0 0; font-size: 13px; color: #999;">Manage monitored markets and resolve alerts</p>
+        </div>
+        <button style="background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer;">+ Add Market</button>
+      </div>
+
+      <!-- Filters -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+        <div style="display: flex; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; font-size: 12px;">
+          <span style="padding: 6px 12px; background: rgba(239,68,68,0.2); color: #ef4444; cursor: pointer;">🔴 Alerted (3)</span>
+          <span style="padding: 6px 12px; color: #999; cursor: pointer;">Monitoring (12)</span>
+          <span style="padding: 6px 12px; color: #999; cursor: pointer;">Active (5)</span>
+          <span style="padding: 6px 12px; color: #999; cursor: pointer;">Resolved (28)</span>
+          <span style="padding: 6px 12px; color: #999; cursor: pointer;">All</span>
+        </div>
+        <select style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #ccc; padding: 6px 10px; border-radius: 6px; font-size: 12px;">
+          <option>All Platforms</option>
+        </select>
+      </div>
+
+      <!-- Table -->
+      <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <thead>
+            <tr style="background: rgba(255,255,255,0.05); text-align: left;">
+              <th style="padding: 10px 12px; color: #666; font-weight: 500;">Title</th>
+              <th style="padding: 10px 12px; color: #666; font-weight: 500;">Platform</th>
+              <th style="padding: 10px 12px; color: #666; font-weight: 500;">Status</th>
+              <th style="padding: 10px 12px; color: #666; font-weight: 500;">Alert</th>
+              <th style="padding: 10px 12px; color: #666; font-weight: 500;">Resolve By</th>
+              <th style="padding: 10px 12px; color: #666; font-weight: 500;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top: 1px solid rgba(255,255,255,0.06); background: rgba(239,68,68,0.05);">
+              <td style="padding: 10px 12px;">Will BTC hit $100k by June 2026?</td>
+              <td style="padding: 10px 12px;"><span style="background: rgba(59,130,246,0.15); color: #3b82f6; padding: 2px 8px; border-radius: 4px; font-size: 11px;">Polymarket</span></td>
+              <td style="padding: 10px 12px;"><span style="color: #f59e0b;">ALERTED</span></td>
+              <td style="padding: 10px 12px;"><span style="color: #ef4444;">🔴 HIGH</span></td>
+              <td style="padding: 10px 12px; color: #999;">Mar 15, 2026</td>
+              <td style="padding: 10px 12px;">
+                <span style="color: #8b5cf6; cursor: pointer; margin-right: 8px;">View</span>
+                <span style="color: #22c55e; cursor: pointer;">Resolve</span>
+              </td>
+            </tr>
+            <tr style="border-top: 1px solid rgba(255,255,255,0.06); background: rgba(239,68,68,0.05);">
+              <td style="padding: 10px 12px;">Will ETH merge to PoS by Q2?</td>
+              <td style="padding: 10px 12px;"><span style="background: rgba(59,130,246,0.15); color: #3b82f6; padding: 2px 8px; border-radius: 4px; font-size: 11px;">Kalshi</span></td>
+              <td style="padding: 10px 12px;"><span style="color: #f59e0b;">ALERTED</span></td>
+              <td style="padding: 10px 12px;"><span style="color: #ef4444;">🔴 CRITICAL</span></td>
+              <td style="padding: 10px 12px; color: #999;">Mar 14, 2026</td>
+              <td style="padding: 10px 12px;">
+                <span style="color: #8b5cf6; cursor: pointer; margin-right: 8px;">View</span>
+                <span style="color: #22c55e; cursor: pointer;">Resolve</span>
+              </td>
+            </tr>
+            <tr style="border-top: 1px solid rgba(255,255,255,0.06);">
+              <td style="padding: 10px 12px;">Fed rate cut in April FOMC?</td>
+              <td style="padding: 10px 12px;"><span style="background: rgba(34,197,94,0.15); color: #22c55e; padding: 2px 8px; border-radius: 4px; font-size: 11px;">Limitless</span></td>
+              <td style="padding: 10px 12px;"><span style="color: #22c55e;">MONITORING</span></td>
+              <td style="padding: 10px 12px;"><span style="color: #666;">—</span></td>
+              <td style="padding: 10px 12px; color: #999;">Apr 30, 2026</td>
+              <td style="padding: 10px 12px;">
+                <span style="color: #8b5cf6; cursor: pointer;">View</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MARKET DETAIL / RESOLVE PAGE -->
+<div class="section" style="margin-top: 24px;">
+  <h3>Market Detail — Resolution View (/admin/markets/:id)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Alerted Market — Resolution Workflow</div>
+    <div class="mockup-body" style="padding: 24px;">
+      <!-- Breadcrumb -->
+      <div style="font-size: 12px; color: #666; margin-bottom: 16px;">
+        Admin → Market Monitor → <span style="color: #ccc;">Will BTC hit $100k by June 2026?</span>
+      </div>
+
+      <!-- Market Info Card -->
+      <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div>
+            <h3 style="margin: 0 0 8px 0;">Will BTC hit $100k by June 2026?</h3>
+            <p style="margin: 0; font-size: 13px; color: #999;">Bitcoin must reach or exceed $100,000 on any major exchange...</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <span style="background: rgba(239,68,68,0.2); color: #ef4444; padding: 4px 10px; border-radius: 4px; font-size: 12px;">🔴 HIGH ALERT</span>
+            <span style="background: rgba(59,130,246,0.15); color: #3b82f6; padding: 4px 10px; border-radius: 4px; font-size: 12px;">Polymarket</span>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 16px; font-size: 12px;">
+          <div><span style="color: #666;">Start</span><br/><span>Mar 1, 2026</span></div>
+          <div><span style="color: #666;">End</span><br/><span>Jun 30, 2026</span></div>
+          <div><span style="color: #666;">Resolve By</span><br/><span style="color: #f59e0b;">Mar 15, 2026</span></div>
+          <div><span style="color: #666;">Added By</span><br/><span style="font-family: monospace;">0xABC...1234</span></div>
+        </div>
+      </div>
+
+      <!-- Alert Reason -->
+      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+        <h4 style="margin: 0 0 8px 0; color: #ef4444; font-size: 13px;">⚠️ Alert Reason</h4>
+        <p style="margin: 0; font-size: 13px;">Multiple sources indicate BTC crossed $100k on Binance at 2026-03-13 14:32 UTC. Coinbase and Kraken confirming.</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+        <button style="background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 13px; cursor: pointer;">🔍 Run Proof of Reasoning</button>
+        <button style="background: transparent; color: #ccc; border: 1px solid rgba(255,255,255,0.15); padding: 10px 20px; border-radius: 6px; font-size: 13px; cursor: pointer;">📰 Check News Manually</button>
+      </div>
+
+      <!-- PoR Result (after running) -->
+      <div style="background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px; padding: 20px; margin-bottom: 16px;">
+        <h4 style="margin: 0 0 12px 0; color: #8b5cf6; font-size: 13px;">🔮 Proof of Reasoning Result</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 12px; font-size: 13px;">
+          <div><span style="color: #666;">Outcome</span><br/><span style="color: #22c55e; font-weight: bold; font-size: 16px;">YES</span></div>
+          <div><span style="color: #666;">Confidence</span><br/><span style="font-weight: bold; font-size: 16px;">0.94</span></div>
+          <div><span style="color: #666;">PoR Root</span><br/><span style="font-family: monospace; font-size: 11px;">a1b2c3d4e5...</span></div>
+        </div>
+        <details style="font-size: 12px; color: #999;">
+          <summary style="cursor: pointer; color: #8b5cf6;">View evidence & reasoning →</summary>
+          <p style="margin-top: 8px;">Evidence bundles, reasoning steps, and full audit trail displayed here (reuses existing playground results components)</p>
+        </details>
+      </div>
+
+      <!-- Resolution Form -->
+      <div style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; padding: 20px;">
+        <h4 style="margin: 0 0 16px 0; color: #22c55e; font-size: 13px;">✅ Confirm Resolution</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Outcome</label>
+            <select style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 8px; border-radius: 6px; font-size: 13px;">
+              <option selected>YES (from PoR)</option>
+              <option>NO (override)</option>
+              <option>INVALID (override)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Confidence</label>
+            <input type="text" value="0.94" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 8px; border-radius: 6px; font-size: 13px; box-sizing: border-box;" />
+          </div>
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Admin Notes (required if overriding PoR)</label>
+          <textarea style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 8px; border-radius: 6px; font-size: 13px; height: 60px; box-sizing: border-box;" placeholder="Explain your reasoning..."></textarea>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <button style="background: #22c55e; color: #000; border: none; padding: 10px 24px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;">Confirm & Notify</button>
+          <span style="font-size: 11px; color: #666;">Will send to Lark channel + Telegram group</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MARKET FORM -->
+<div class="section" style="margin-top: 24px;">
+  <h3>Add Market Form (/admin/markets/new)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Add New Market to Monitor</div>
+    <div class="mockup-body" style="padding: 24px; max-width: 600px;">
+      <h3 style="margin: 0 0 20px 0;">Add Market</h3>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Title *</label>
+          <input style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 10px; border-radius: 6px; font-size: 13px; box-sizing: border-box;" placeholder="Will BTC hit $100k by June 2026?" />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Platform *</label>
+            <select style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 10px; border-radius: 6px; font-size: 13px;">
+              <option>Polymarket</option>
+              <option>Kalshi</option>
+              <option>Limitless</option>
+              <option>Custom</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Platform URL</label>
+            <input style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 10px; border-radius: 6px; font-size: 13px; box-sizing: border-box;" placeholder="https://polymarket.com/..." />
+          </div>
+        </div>
+        <div>
+          <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Question (for PoR resolution) *</label>
+          <input style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 10px; border-radius: 6px; font-size: 13px; box-sizing: border-box;" placeholder="The exact question to resolve..." />
+        </div>
+        <div>
+          <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Description</label>
+          <textarea style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 10px; border-radius: 6px; font-size: 13px; height: 80px; box-sizing: border-box;" placeholder="Detailed resolution criteria..."></textarea>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Start Time *</label>
+            <input type="text" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 10px; border-radius: 6px; font-size: 13px; box-sizing: border-box;" placeholder="2026-03-13T00:00Z" />
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">End Time *</label>
+            <input type="text" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 10px; border-radius: 6px; font-size: 13px; box-sizing: border-box;" placeholder="2026-06-30T23:59Z" />
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Resolve Time *</label>
+            <input type="text" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #ccc; padding: 10px; border-radius: 6px; font-size: 13px; box-sizing: border-box;" placeholder="2026-07-01T00:00Z" />
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <button style="background: #8b5cf6; color: white; border: none; padding: 10px 24px; border-radius: 6px; font-size: 13px; cursor: pointer;">Add Market</button>
+          <button style="background: transparent; color: #999; border: 1px solid rgba(255,255,255,0.15); padding: 10px 24px; border-radius: 6px; font-size: 13px; cursor: pointer;">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
