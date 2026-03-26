@@ -56,12 +56,15 @@ interface DisputePanelProps {
   onResult?: (result: DisputeResponse, meta: { before: ResolutionArtifacts; evidenceBundleIndex: number }) => void;
   /** Override collectors to use instead of artifacts.collectors_used */
   collectors?: string[];
+  /** Override the submit button label (default: "Submit dispute") */
+  submitLabel?: string;
 }
 
 export function DisputePanel({
   artifacts,
   onSubmit,
   disabled = false,
+  submitLabel = "Submit dispute",
   defaultCaseId,
   onResult,
   collectors,
@@ -381,7 +384,7 @@ export function DisputePanel({
               (disabled || submitting) && "opacity-50 cursor-not-allowed"
             )}
           >
-            {submitting ? "Submitting..." : "Submit dispute"}
+            {submitting ? "Generating..." : submitLabel}
           </button>
         </div>
       </CardContent>

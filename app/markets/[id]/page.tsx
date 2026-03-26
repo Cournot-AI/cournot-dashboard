@@ -2,14 +2,19 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { useRole } from "@/lib/role";
 import { fetchPublicMarket } from "@/lib/admin-api";
 import type { AdminMarket, MarketExternalData, MarketClassification } from "@/lib/types";
 import { MarketDetail, ExternalDataSection } from "@/components/admin/market-detail";
 import { AiResultDetail } from "@/components/admin/ai-result-detail";
+import { MarketDisputes } from "@/components/admin/market-disputes";
+import { CodeEntryDialog } from "@/components/auth/code-entry-dialog";
 import { Loader2 } from "lucide-react";
 
 export default function PublicMarketDetailPage() {
   const params = useParams<{ id: string }>();
+  const { accessCode, login } = useRole();
+  const [codeDialogOpen, setCodeDialogOpen] = useState(false);
   const [market, setMarket] = useState<AdminMarket | null>(null);
   const [externalData, setExternalData] = useState<MarketExternalData[]>([]);
   const [classification, setClassification] = useState<MarketClassification | null>(null);
@@ -79,6 +84,25 @@ export default function PublicMarketDetailPage() {
           resolveReasoning={market.resolve_reasoning || undefined}
         />
       )}
+
+      {market.ai_result && (
+        <MarketDisputes
+          marketId={market.id}
+          currentAiResult={market.ai_result}
+          currentAiOutcome={market.ai_outcome}
+          aiPrompt={market.ai_prompt || undefined}
+          isAdmin={false}
+          accessCode={accessCode}
+          onMarketUpdated={load}
+          onRequestCode={() => setCodeDialogOpen(true)}
+        />
+      )}
+
+      <CodeEntryDialog
+        open={codeDialogOpen}
+        onOpenChange={setCodeDialogOpen}
+        onSubmit={login}
+      />
     </div>
   );
 }

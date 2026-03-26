@@ -69,6 +69,8 @@ interface LLMDisputePanelProps {
   disabled?: boolean;
   /** Override collectors to use instead of artifacts.collectors_used */
   collectors?: string[];
+  /** Override the submit button label (default: "Submit Dispute") */
+  submitLabel?: string;
 }
 
 export function LLMDisputePanel({
@@ -76,6 +78,7 @@ export function LLMDisputePanel({
   onSubmit,
   disabled = false,
   collectors,
+  submitLabel = "Submit Dispute",
 }: LLMDisputePanelProps) {
   const [reasonCode, setReasonCode] = useState<LLMDisputeReasonCode>("EVIDENCE_MISREAD");
   const [message, setMessage] = useState("");
@@ -309,7 +312,7 @@ export function LLMDisputePanel({
                   Processing...
                 </>
               ) : (
-                "Submit Dispute"
+                submitLabel
               )}
             </button>
             {submitting && (

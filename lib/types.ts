@@ -394,3 +394,36 @@ export interface MarketInfo {
   external_data: MarketExternalData[];
   classification: MarketClassification | null;
 }
+
+// ─── Disputes ────────────────────────────────────────────────────────────────
+
+export interface Dispute {
+  id: number;
+  market_id: number;
+  dispute_type: "manual";
+  previous_ai_result: string;
+  previous_ai_outcome: string;
+  proposed_ai_result: string;
+  proposed_ai_outcome: string;
+  reason: string;
+  submitted_by: string;
+  is_accepted: boolean;
+  accepted_by: string;
+  accepted_time: string;
+  created_time: string;
+}
+
+export interface DisputeListResponse {
+  disputes: Dispute[];
+  total: number;
+}
+
+export interface DisputeSubmitResponse {
+  dispute: Dispute;
+  market: AdminMarket;
+}
+
+export interface DisputeAcceptResponse {
+  dispute: Dispute;
+  market: AdminMarket;
+}

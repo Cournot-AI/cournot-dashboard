@@ -1,4 +1,11 @@
-import type { AdminMarket, AdminMarketStatus, MarketInfo } from "@/lib/types";
+import type {
+  AdminMarket,
+  AdminMarketStatus,
+  MarketInfo,
+  DisputeListResponse,
+  DisputeSubmitResponse,
+  DisputeAcceptResponse,
+} from "@/lib/types";
 import { toast } from "sonner";
 
 const API_BASE = "/api/proxy";
@@ -142,4 +149,58 @@ export async function updateMarket(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ code, id, ...data }),
   });
+}
+
+// ─── Disputes ────────────────────────────────────────────────────────────────
+
+export async function submitDispute(
+  code: string,
+  marketId: number,
+  proposedAiResult: string,
+  reason?: string
+): Promise<DisputeSubmitResponse> {
+  return adminFetch<DisputeSubmitResponse>(
+    `${API_BASE}/markets/dispute/submit`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code,
+        market_id: marketId,
+        proposed_ai_result: proposedAiResult,
+        reason: reason || "",
+      }),
+    }
+  );
+}
+
+export async function acceptDispute(
+  code: string,
+  disputeId: number
+): Promise<DisputeAcceptResponse> {
+  return adminFetch<DisputeAcceptResponse>(
+    `${API_BASE}/markets/dispute/accept`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, dispute_id: disputeId }),
+    }
+  );
+}
+
+export async function fetchDisputes(
+  code: string,
+  marketId: number,
+  params: { page_num?: number; page_size?: number } = {}
+): Promise<DisputeListResponse> {
+  const qs = new URLSearchParams();
+  qs.set("code", code);
+  qs.set("market_id", String(marketId));
+  qs.set("dispute_type", "manual");
+  qs.set("page_num", String(params.page_num ?? 1));
+  qs.set("page_size", String(params.page_size ?? 10));
+  const data = await adminFetch<DisputeListResponse>(
+    `${API_BASE}/markets/disputes?${qs.toString()}`
+  );
+  return { disputes: data.disputes ?? [], total: data.total ?? 0 };
 }

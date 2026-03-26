@@ -8,6 +8,7 @@ import type { AdminMarket, RunSummary, MarketExternalData, MarketClassification 
 import { MarketDetail, ExternalDataSection } from "@/components/admin/market-detail";
 import { AiResultDetail } from "@/components/admin/ai-result-detail";
 import { PorTrigger } from "@/components/admin/por-trigger";
+import { MarketDisputes } from "@/components/admin/market-disputes";
 import { ResolveForm } from "@/components/admin/resolve-form";
 import { Input } from "@/components/ui/input";
 import {
@@ -187,6 +188,19 @@ export default function MarketDetailPage() {
           aiResult={displayAiResult}
           aiPrompt={effectiveAiPrompt || market.ai_prompt || undefined}
           resolveReasoning={market.resolve_reasoning || undefined}
+        />
+      )}
+
+      {/* Disputes — shown for resolved markets */}
+      {market.status === "resolved" && market.ai_result && (
+        <MarketDisputes
+          marketId={market.id}
+          currentAiResult={market.ai_result}
+          currentAiOutcome={market.ai_outcome}
+          aiPrompt={effectiveAiPrompt || market.ai_prompt || undefined}
+          isAdmin={true}
+          accessCode={accessCode}
+          onMarketUpdated={load}
         />
       )}
 
