@@ -29,11 +29,6 @@ export default function PublicMarketDetailPage() {
       const info = await fetchPublicMarket(Number(params.id));
       if (!info) {
         setError("Market not found");
-      } else if (info.market.status !== "resolved") {
-        setError("This market is not yet resolved and is not available for public viewing.");
-        setMarket(null);
-        setLoading(false);
-        return;
       } else {
         setMarket(info.market);
         setExternalData(info.external_data ?? []);
@@ -77,7 +72,7 @@ export default function PublicMarketDetailPage() {
         <ExternalDataSection data={externalData} />
       )}
 
-      {market.ai_result && (
+      {market.status === "resolved" && market.ai_result && (
         <AiResultDetail
           aiResult={market.ai_result}
           aiPrompt={market.ai_prompt || undefined}
@@ -85,7 +80,7 @@ export default function PublicMarketDetailPage() {
         />
       )}
 
-      {market.ai_result && (
+      {market.status === "resolved" && market.ai_result && (
         <MarketDisputes
           marketId={market.id}
           currentAiResult={market.ai_result}
