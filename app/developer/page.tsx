@@ -24,6 +24,7 @@ import {
   FileCheck,
   MessageSquareWarning,
   Zap,
+  Info,
 } from "lucide-react";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -315,9 +316,19 @@ const PROVIDERS = [
   { provider: "grok", model: "grok-4-fast" },
 ];
 
-const TOC_ITEMS = [
-  { id: "gateway", label: "Backend Gateway" },
-  { id: "authentication", label: "Authentication" },
+interface TocItem {
+  id: string;
+  label: string;
+  indent?: boolean;
+  heading?: boolean;
+}
+
+const TOC_ITEMS: TocItem[] = [
+  { id: "public-data-api", label: "Public Data API", heading: true },
+  { id: "market-info", label: "Market Info", indent: true },
+  { id: "por-pipeline-api", label: "PoR Pipeline API", heading: true },
+  { id: "gateway", label: "Backend Gateway", indent: true },
+  { id: "authentication", label: "Authentication", indent: true },
   { id: "step-prompt", label: "Step 1 - Prompt", indent: true },
   { id: "step-collect", label: "Step 2 - Collect", indent: true },
   { id: "step-quality-check", label: "Step 2.5 - Quality Check", indent: true },
@@ -325,13 +336,13 @@ const TOC_ITEMS = [
   { id: "step-judge", label: "Step 4 - Judge", indent: true },
   { id: "step-bundle", label: "Step 5 - Bundle", indent: true },
   { id: "step-resolve", label: "Resolve (all-in-one)", indent: true },
-  { id: "validate", label: "Validate Market" },
-  { id: "dispute", label: "Dispute" },
-  { id: "dispute-llm", label: "Dispute (LLM)" },
-  { id: "capabilities", label: "Capabilities" },
-  { id: "collectors", label: "Collectors & Providers" },
-  { id: "errors", label: "Error Handling" },
-  { id: "quickstart", label: "Quick Start" },
+  { id: "validate", label: "Validate Market", indent: true },
+  { id: "dispute", label: "Dispute", indent: true },
+  { id: "dispute-llm", label: "Dispute (LLM)", indent: true },
+  { id: "capabilities", label: "Capabilities", indent: true },
+  { id: "collectors", label: "Collectors & Providers", indent: true },
+  { id: "errors", label: "Error Handling", indent: true },
+  { id: "quickstart", label: "Quick Start", indent: true },
 ];
 
 // ─── Page Component ─────────────────────────────────────────────────────────
@@ -368,21 +379,31 @@ export default function DeveloperPage() {
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-3 px-2">
             On this page
           </p>
-          {TOC_ITEMS.map((item) => (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              className={cn(
-                "block text-xs py-1 px-2 rounded-md transition-colors",
-                item.indent && "ml-3",
-                activeSection === item.id
-                  ? "text-foreground bg-accent/50 font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-              )}
-            >
-              {item.label}
-            </a>
-          ))}
+          {TOC_ITEMS.map((item) =>
+            item.heading ? (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mt-4 mb-1 px-2 first:mt-0 hover:text-muted-foreground transition-colors"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className={cn(
+                  "block text-xs py-1 px-2 rounded-md transition-colors",
+                  item.indent && "ml-3",
+                  activeSection === item.id
+                    ? "text-foreground bg-accent/50 font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                )}
+              >
+                {item.label}
+              </a>
+            )
+          )}
         </div>
       </nav>
 
@@ -392,9 +413,111 @@ export default function DeveloperPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">API Reference</h1>
           <p className="text-sm text-muted-foreground mt-1 leading-relaxed max-w-2xl">
-            Complete reference for the Cournot Proof-of-Reasoning pipeline API. The pipeline
-            resolves prediction market questions in five sequential steps, producing a cryptographically
-            verifiable Proof-of-Reasoning bundle.
+            Complete reference for the Cournot API. This page covers two categories of endpoints:
+            the <strong className="text-foreground">Public Data API</strong> for querying stored market
+            data (no authentication required), and the <strong className="text-foreground">Proof-of-Reasoning
+            Pipeline API</strong> for resolving prediction markets through AI-driven evidence
+            collection and cryptographic verification.
+          </p>
+        </div>
+
+        {/* ━━━ PUBLIC DATA API ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <SectionAnchor id="public-data-api" />
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold tracking-tight">Public Data API</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+            These endpoints serve stored market data directly from the Cournot platform. They
+            require no authentication and are designed for third-party integrations &mdash; partners
+            can use them to fetch market details, track resolution status, and display market
+            information in their own applications.
+          </p>
+        </div>
+
+        {/* ─── Market Info ──────────────────────────────────────────────── */}
+        <EndpointSection
+          id="market-info"
+          method="GET"
+          path="/markets/info?id={market_id}"
+          title="Market Info"
+          icon={Info}
+          description="Returns full details for a given market stored on the Cournot platform, including current status, classification, external data, and AI resolution results (if resolved). This is a direct data endpoint — it reads from Cournot's database, not the AI Oracle."
+          requestFields={[
+            { key: "id", type: "integer", description: "The market ID to look up", required: true },
+          ]}
+          requestExample={`# No request body — pass id as a query parameter
+GET https://interface.cournot.ai/play/polymarket/markets/info?id=185557`}
+          curlExample={`curl "https://interface.cournot.ai/play/polymarket/markets/info?id=185557"`}
+          responseFields={[
+            { key: "code", type: "integer", description: "Response status code. 0 = success." },
+            { key: "msg", type: "string", description: "Status message, e.g. \"Success\"" },
+            { key: "data.market", type: "Market", description: "Full market object with all fields" },
+            { key: "data.market.id", type: "integer", description: "Unique market identifier" },
+            { key: "data.market.title", type: "string", description: "Market question title" },
+            { key: "data.market.description", type: "string", description: "Resolution criteria (may contain HTML)" },
+            { key: "data.market.platform_url", type: "string", description: "Link to the market on the source platform" },
+            { key: "data.market.source", type: "string", description: "Source platform: \"polymarket\", \"kalshi\", \"limitless\", \"myriad\", \"predictfun\"" },
+            { key: "data.market.status", type: "string", description: "Market status: \"monitoring\", \"pending_verification\", or \"resolved\"" },
+            { key: "data.market.market_timing_type", type: "string", description: "\"event_based\" or \"time_based\"" },
+            { key: "data.market.start_time", type: "string", description: "Market start time (ISO 8601)" },
+            { key: "data.market.end_time", type: "string", description: "Market end time (ISO 8601)" },
+            { key: "data.market.ai_prompt", type: "object", description: "Compiled AI prompt specification used for resolution" },
+            { key: "data.market.ai_result", type: "string", description: "AI resolution result text (empty if not yet resolved)" },
+            { key: "data.market.ai_outcome", type: "string", description: "AI outcome: \"YES\", \"NO\", \"INVALID\", or empty" },
+            { key: "data.external_data", type: "ExternalData[]", description: "Array of external data sources collected for this market" },
+            { key: "data.classification", type: "Classification", description: "Market category, subcategory, and competition" },
+          ]}
+          responseExample={`{
+  "code": 0,
+  "msg": "Success",
+  "data": {
+    "market": {
+      "id": 185557,
+      "title": "Will Denmark use a 4-3-3 starting lineup?",
+      "description": "<resolution criteria...>",
+      "platform_url": "https://polymarket.com/event/...",
+      "source": "polymarket",
+      "status": "monitoring",
+      "market_timing_type": "time_based",
+      "start_time": "2025-03-20T00:00:00Z",
+      "end_time": "2026-03-26T21:00:00Z",
+      "ai_prompt": { "..." : "..." },
+      "ai_result": "",
+      "ai_outcome": ""
+    },
+    "external_data": [
+      {
+        "collector": "espn_soccer",
+        "data": {
+          "event": "Denmark vs North Macedonia",
+          "status": "pre",
+          "venue": "Parken Stadium"
+        }
+      }
+    ],
+    "classification": {
+      "category": "sports",
+      "subcategory": "football",
+      "competition": "FIFA World Cup Qualifiers"
+    }
+  }
+}`}
+          notes={[
+            "No authentication required — this is a public endpoint for third-party integrations.",
+            "This endpoint returns stored data from the Cournot platform, not live AI Oracle results.",
+            "The ai_result and ai_outcome fields are empty strings until the market is resolved.",
+            "The description field may contain HTML markup for resolution criteria.",
+          ]}
+        />
+
+        {/* ━━━ POR PIPELINE API ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <SectionAnchor id="por-pipeline-api" />
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold tracking-tight">PoR Pipeline API</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+            The Proof-of-Reasoning pipeline resolves prediction market questions in five sequential
+            steps, producing a cryptographically verifiable PoR bundle. These endpoints call the
+            AI Oracle directly and require authentication via an access code. All requests use
+            a gateway envelope format.
           </p>
         </div>
 
