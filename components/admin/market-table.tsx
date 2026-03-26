@@ -38,6 +38,7 @@ const SOURCE_OPTIONS: { label: string; value: SourceFilter }[] = [
   { label: "Polymarket", value: "polymarket" },
   { label: "Limitless", value: "limitless" },
   { label: "Myriad", value: "myriad" },
+  { label: "PredictFun", value: "predictfun" },
 ];
 
 type MarketTypeFilter = string | "all";
