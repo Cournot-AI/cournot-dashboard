@@ -54,15 +54,35 @@ export async function POST(
     const timeout = setTimeout(() => controller.abort(), POST_TIMEOUT_MS);
 
     const body = await request.text();
-    const res = await fetch(url, {
+    let res = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
       },
       body,
+      redirect: "manual",
       signal: controller.signal,
     });
+
+    // If upstream redirects (301/302/307/308), re-POST to the new location
+    // instead of letting fetch convert POST→GET (default redirect behavior)
+    if ([301, 302, 307, 308].includes(res.status)) {
+      const location = res.headers.get("location");
+      if (location) {
+        const redirectUrl = new URL(location, url).toString();
+        res = await fetch(redirectUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+          body,
+          redirect: "manual",
+          signal: controller.signal,
+        });
+      }
+    }
 
     clearTimeout(timeout);
 
@@ -95,15 +115,34 @@ export async function PUT(
     const timeout = setTimeout(() => controller.abort(), POST_TIMEOUT_MS);
 
     const body = await request.text();
-    const res = await fetch(url, {
+    let res = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
       },
       body,
+      redirect: "manual",
       signal: controller.signal,
     });
+
+    // If upstream redirects, re-PUT to the new location
+    if ([301, 302, 307, 308].includes(res.status)) {
+      const location = res.headers.get("location");
+      if (location) {
+        const redirectUrl = new URL(location, url).toString();
+        res = await fetch(redirectUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+          body,
+          redirect: "manual",
+          signal: controller.signal,
+        });
+      }
+    }
 
     clearTimeout(timeout);
 

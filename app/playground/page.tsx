@@ -154,8 +154,15 @@ export default function PlaygroundPage() {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
 
   // Pipeline progress
-  const [pipelineSteps, setPipelineSteps] = useState<PipelineStep[]>(createInitialSteps());
   const [useMultiStep, setUseMultiStep] = useState(true);
+  const [skipQualityCheck, setSkipQualityCheck] = useState(true);
+
+  function createSteps() {
+    const steps = createInitialSteps();
+    return skipQualityCheck ? steps.filter((s) => s.id !== "quality_check") : steps;
+  }
+
+  const [pipelineSteps, setPipelineSteps] = useState<PipelineStep[]>(createSteps);
 
   const isLoading = phase === "prompting" || phase === "resolving";
   const hasResults = phase === "prompted" || phase === "resolved";
@@ -171,7 +178,7 @@ export default function PlaygroundPage() {
     setResolutionArtifacts(null);
     setExecutionLogs([]);
     setValidationResult(null);
-    setPipelineSteps(createInitialSteps());
+    setPipelineSteps(createSteps());
     if (accessCode) trackPlaygroundReset(accessCode);
   }
 
@@ -229,7 +236,7 @@ export default function PlaygroundPage() {
     setResolutionArtifacts(null);
     setExecutionLogs([]);
     setValidationResult(null);
-    setPipelineSteps(createInitialSteps());
+    setPipelineSteps(createSteps());
     setPipelineSteps((prev) => updateStepStatus(prev, "prompt", "running"));
 
     try {
@@ -284,7 +291,7 @@ export default function PlaygroundPage() {
     if (!accessCode || !promptResult?.prompt_spec || !promptResult?.tool_plan) return;
 
     setPhase("resolving");
-    const steps = createInitialSteps();
+    const steps = createSteps();
     steps[0].status = "completed";
     setPipelineSteps(steps);
 
@@ -329,49 +336,53 @@ export default function PlaygroundPage() {
       trackPlaygroundStepComplete(accessCode, "collect", true);
 
       // Step 3: Quality check + retry loop (up to 2 retries)
-      setPipelineSteps((prev) => updateStepStatus(prev, "quality_check", "running"));
       let qualityScorecard: QualityScorecard | null = null;
-      const MAX_QC_RETRIES = 2;
-      for (let i = 0; i < MAX_QC_RETRIES; i++) {
-        const qcData = await callApi(accessCode, "/step/quality_check", {
-          prompt_spec: promptSpec,
-          evidence_bundles: evidenceBundles,
-        });
+      if (skipQualityCheck) {
+        // quality_check step is excluded from the pipeline display
+      } else {
+        setPipelineSteps((prev) => updateStepStatus(prev, "quality_check", "running"));
+        const MAX_QC_RETRIES = 2;
+        for (let i = 0; i < MAX_QC_RETRIES; i++) {
+          const qcData = await callApi(accessCode, "/step/quality_check", {
+            prompt_spec: promptSpec,
+            evidence_bundles: evidenceBundles,
+          });
 
-        if (!qcData.ok) break;
-        qualityScorecard = qcData.scorecard;
+          if (!qcData.ok) break;
+          qualityScorecard = qcData.scorecard;
 
-        if (qcData.meets_threshold) break; // quality is good enough
+          if (qcData.meets_threshold) break; // quality is good enough
 
-        const retryHints = qualityScorecard?.retry_hints;
-        if (!retryHints || Object.keys(retryHints).length === 0) break;
+          const retryHints = qualityScorecard?.retry_hints;
+          if (!retryHints || Object.keys(retryHints).length === 0) break;
 
-        // Retry collect with feedback
-        const retryData = await callApi(accessCode, "/step/collect", {
-          prompt_spec: promptSpec,
-          tool_plan: toolPlan,
-          collectors: ["CollectorOpenSearch"],
-          quality_feedback: retryHints,
-          ...(selectedProvider && { llm_provider: selectedProvider }),
-          ...(selectedProvider && selectedModel && { llm_model: selectedModel }),
-        });
-        if (retryData.ok !== false && Array.isArray(retryData.evidence_bundles)) {
-          evidenceBundles = [...evidenceBundles, ...retryData.evidence_bundles];
+          // Retry collect with feedback
+          const retryData = await callApi(accessCode, "/step/collect", {
+            prompt_spec: promptSpec,
+            tool_plan: toolPlan,
+            collectors: ["CollectorOpenSearch"],
+            quality_feedback: retryHints,
+            ...(selectedProvider && { llm_provider: selectedProvider }),
+            ...(selectedProvider && selectedModel && { llm_model: selectedModel }),
+          });
+          if (retryData.ok !== false && Array.isArray(retryData.evidence_bundles)) {
+            evidenceBundles = [...evidenceBundles, ...retryData.evidence_bundles];
+          }
         }
+        const qualityLevel = qualityScorecard?.quality_level ?? "N/A";
+        const coveragePct = qualityScorecard?.requirements_coverage != null
+          ? `${Math.round(qualityScorecard.requirements_coverage * 100)}%`
+          : "N/A";
+        setPipelineSteps((prev) =>
+          updateStepStatus(
+            prev,
+            "quality_check",
+            "completed",
+            `Quality: ${qualityLevel} | Coverage: ${coveragePct} | ${qualityScorecard?.meets_threshold ? "Passed" : "Below threshold"}`
+          )
+        );
+        trackPlaygroundStepComplete(accessCode, "quality_check", true);
       }
-      const qualityLevel = qualityScorecard?.quality_level ?? "N/A";
-      const coveragePct = qualityScorecard?.requirements_coverage != null
-        ? `${Math.round(qualityScorecard.requirements_coverage * 100)}%`
-        : "N/A";
-      setPipelineSteps((prev) =>
-        updateStepStatus(
-          prev,
-          "quality_check",
-          "completed",
-          `Quality: ${qualityLevel} | Coverage: ${coveragePct} | ${qualityScorecard?.meets_threshold ? "Passed" : "Below threshold"}`
-        )
-      );
-      trackPlaygroundStepComplete(accessCode, "quality_check", true);
 
       // Step 4: Audit
       setPipelineSteps((prev) => updateStepStatus(prev, "audit", "running"));
@@ -624,6 +635,16 @@ export default function PlaygroundPage() {
               disabled={isLoading}
             />
             Multi-step mode
+          </label>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={skipQualityCheck}
+              onChange={(e) => setSkipQualityCheck(e.target.checked)}
+              className="rounded border-border"
+              disabled={isLoading}
+            />
+            Skip quality check
           </label>
           <button
             onClick={handleChangeCode}
