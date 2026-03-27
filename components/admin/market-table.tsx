@@ -13,10 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type SortField = "created_time" | "end_time" | "start_time" | "expected_resolve_time";
+type SortField = "created_time" | "end_time" | "start_time" | "expected_resolve_time" | "updated_time";
 
 const SORT_OPTIONS: { label: string; value: SortField }[] = [
   { label: "Expected Resolve", value: "expected_resolve_time" },
+  { label: "Recently Updated", value: "updated_time" },
   { label: "Newest", value: "created_time" },
   { label: "End Time", value: "end_time" },
   { label: "Start Time", value: "start_time" },
@@ -88,6 +89,7 @@ export function MarketTable() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<SortField>("expected_resolve_time");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("pending_verification");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [marketTypeFilter, setMarketTypeFilter] = useState<MarketTypeFilter>("all");
@@ -101,7 +103,7 @@ export function MarketTable() {
         page_num: page,
         page_size: pageSize,
         sort,
-        order: "asc",
+        order,
         status: statusFilter === "all" ? undefined : statusFilter,
         source: sourceFilter === "all" ? undefined : sourceFilter,
         market_timing_type: marketTypeFilter === "all" ? undefined : marketTypeFilter,
@@ -113,7 +115,7 @@ export function MarketTable() {
     } finally {
       setLoading(false);
     }
-  }, [accessCode, sort, page, statusFilter, sourceFilter, marketTypeFilter]);
+  }, [accessCode, sort, order, page, statusFilter, sourceFilter, marketTypeFilter]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -126,7 +128,17 @@ export function MarketTable() {
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
-            onClick={() => { setStatusFilter(tab.value); setPage(1); }}
+            onClick={() => {
+              setStatusFilter(tab.value);
+              setPage(1);
+              if (tab.value === "resolved") {
+                setSort("updated_time");
+                setOrder("desc");
+              } else {
+                setSort("expected_resolve_time");
+                setOrder("asc");
+              }
+            }}
             className={cn(
               "px-3 py-1 rounded-md text-xs font-medium transition-colors",
               statusFilter === tab.value
