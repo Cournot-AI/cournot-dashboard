@@ -104,7 +104,7 @@ export function MarketTable() {
         order: "asc",
         status: statusFilter === "all" ? undefined : statusFilter,
         source: sourceFilter === "all" ? undefined : sourceFilter,
-        market_type: marketTypeFilter === "all" ? undefined : marketTypeFilter,
+        market_timing_type: marketTypeFilter === "all" ? undefined : marketTypeFilter,
       });
       setMarkets(data.markets ?? []);
       setTotal(data.total ?? 0);

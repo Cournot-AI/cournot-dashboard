@@ -69,7 +69,7 @@ export async function fetchMarkets(
     order?: "asc" | "desc";
     status?: AdminMarketStatus;
     source?: string;
-    market_type?: string;
+    market_timing_type?: string;
   } = {}
 ): Promise<ListMarketsResponse> {
   const qs = new URLSearchParams();
@@ -80,7 +80,7 @@ export async function fetchMarkets(
   if (params.order) qs.set("order", params.order);
   if (params.status) qs.set("status", params.status);
   if (params.source) qs.set("source", params.source);
-  if (params.market_type) qs.set("market_type", params.market_type);
+  if (params.market_timing_type) qs.set("market_timing_type", params.market_timing_type);
   const data = await adminFetch<ListMarketsResponse>(
     `${API_BASE}/markets/list?${qs.toString()}`
   );
