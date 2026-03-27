@@ -17,6 +17,7 @@ export interface ApiEvent {
   ai_result: string; // JSON string or empty
   source: string;
   match_result: string;
+  proof_txn?: string;
 }
 
 export interface ApiEventsData {
@@ -226,6 +227,7 @@ export function transformEventToCase(event: ApiEvent): MarketCase {
     id: event.id,
     market_id: String(event.event_id),
     slug: event.slug,
+    proof_txn: event.proof_txn || undefined,
     source: {
       platform: event.source || "unknown",
       event_url: `https://polymarket.com/event/${event.slug}`,

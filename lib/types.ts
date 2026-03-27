@@ -318,6 +318,7 @@ export interface MarketCase {
   id: number; // internal auto-increment ID for direct lookup
   market_id: string;
   slug: string;
+  proof_txn?: string;
   source: SourceInfo;
   parse_result: ParseResult;
   oracle_result: RunSummary | null;
@@ -367,6 +368,7 @@ export interface AdminMarket {
   source: string;
   market_timing_type: string;
   silence_deadline: string;
+  proof_txn?: string;
 }
 
 export interface MarketExternalData {

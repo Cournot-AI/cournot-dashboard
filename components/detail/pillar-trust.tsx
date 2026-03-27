@@ -8,7 +8,7 @@ import { ErrorCallout } from "@/components/shared/error-callout";
 import type { MarketCase } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Shield, FileCheck, Info, Download, Brain, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Shield, FileCheck, Info, Download, Brain, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -131,6 +131,19 @@ export function PillarTrust({ c }: { c: MarketCase }) {
                   tooltip="Proof-of-Resolution root. Top-level Merkle root combining evidence, reasoning, and output into a single tamper-evident commitment."
                 />
               </div>
+
+              {c.proof_txn && (
+                <a
+                  href={`https://blockexplorer.one/binance-smart-chain/testnet/tx/${c.proof_txn}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-2.5 text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-colors"
+                >
+                  <Shield className="h-3.5 w-3.5" />
+                  View on-chain proof transaction
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
             </div>
 
             <Separator />
