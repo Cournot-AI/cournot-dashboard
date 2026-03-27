@@ -315,6 +315,7 @@ export type MatchStatus =
   | "VERIFICATION_FAILED";
 
 export interface MarketCase {
+  id: number; // internal auto-increment ID for direct lookup
   market_id: string;
   slug: string;
   source: SourceInfo;

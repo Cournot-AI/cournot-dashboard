@@ -3,6 +3,7 @@ import type { MarketCase, ParseResult, RunSummary, Outcome, SourceStatus, Eviden
 const API_BASE = "/api/proxy";
 
 export interface ApiEvent {
+  id: number; // internal auto-increment ID
   event_id: number;
   slug: string;
   title: string;
@@ -222,6 +223,7 @@ export function transformEventToCase(event: ApiEvent): MarketCase {
   const officialResolvedAt = isClosed ? event.end_time : null;
 
   return {
+    id: event.id,
     market_id: String(event.event_id),
     slug: event.slug,
     source: {
@@ -344,46 +346,34 @@ export async function fetchMonitoringEvents(
   };
 }
 
-/** Fetch a single event by ID (searches through paginated results) */
+/** Fetch a single event by internal ID via POST /event */
 export async function fetchEventById(eventId: string): Promise<MarketCase | null> {
-  // The API doesn't have a single-event endpoint, so we search through pages
-  // First try to find in recent events (most likely case)
-  const pageSize = 100;
-  let page = 1;
-  const maxPages = 10; // Limit search to avoid too many requests
-
-  while (page <= maxPages) {
-    const url = `${API_BASE}/events?page_num=${page}&page_size=${pageSize}`;
-
-    const res = await fetch(url, {
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch events: ${res.status} ${res.statusText}`);
-    }
-
-    const response: ApiResponse<ApiEventsData> = await res.json();
-
-    if (response.code !== 0) {
-      throw new Error(response.msg || "API error");
-    }
-
-    const event = response.data.events.find(
-      (e) => String(e.event_id) === eventId || e.slug === eventId
-    );
-
-    if (event) {
-      return transformEventToCase(event);
-    }
-
-    // No more pages to search
-    if (response.data.events.length < pageSize) {
-      break;
-    }
-
-    page++;
+  const numericId = Number(eventId);
+  if (!Number.isFinite(numericId) || numericId <= 0) {
+    return null;
   }
 
-  return null;
+  const res = await fetch(`${API_BASE}/event`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: numericId }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch event: ${res.status} ${res.statusText}`);
+  }
+
+  const response: ApiResponse<{ events: ApiEvent[] }> = await res.json();
+
+  if (response.code !== 0) {
+    throw new Error(response.msg || "API error");
+  }
+
+  const events = response.data?.events ?? [];
+  if (events.length === 0) {
+    return null;
+  }
+
+  return transformEventToCase(events[0]);
 }

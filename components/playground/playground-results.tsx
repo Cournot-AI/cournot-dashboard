@@ -44,6 +44,7 @@ function buildSyntheticCase(
   const now = new Date().toISOString();
 
   return {
+    id: 0,
     market_id: `playground-${Date.now()}`,
     slug: `playground-${Date.now()}`,
     source: {

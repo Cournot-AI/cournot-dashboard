@@ -450,7 +450,7 @@ export function CaseTableView({ cases, filters, onFiltersChange, pagination }: C
             <CaseCard
               key={c.market_id}
               c={c}
-              onClick={() => { trackCaseClick(c.market_id); router.push(`/cases/${c.slug}`); }}
+              onClick={() => { trackCaseClick(c.market_id); router.push(`/cases/${c.id}`); }}
             />
           ))}
         </div>
@@ -514,7 +514,7 @@ export function CaseTableView({ cases, filters, onFiltersChange, pagination }: C
                               onClick={(e) => {
                                 e.stopPropagation();
                                 trackCaseClick(c.market_id);
-                                router.push(`/cases/${c.slug}`);
+                                router.push(`/cases/${c.id}`);
                               }}
                               className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-accent transition-all shrink-0"
                               title="View detail"
