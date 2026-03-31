@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useRole } from "@/lib/role";
 import { fetchMarket, updateMarket } from "@/lib/admin-api";
-import type { AdminMarket, RunSummary, MarketExternalData, MarketClassification } from "@/lib/types";
+import type { AdminMarket, RunSummary, MarketExternalData, MarketClassification, MarketReview } from "@/lib/types";
 import { MarketDetail, ExternalDataSection } from "@/components/admin/market-detail";
 import { AiResultDetail } from "@/components/admin/ai-result-detail";
 import { PorTrigger } from "@/components/admin/por-trigger";
 import { MarketDisputes } from "@/components/admin/market-disputes";
-import { ResolveForm } from "@/components/admin/resolve-form";
+import { ResolveForm, ConflictReviews } from "@/components/admin/resolve-form";
 import { Input } from "@/components/ui/input";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -17,6 +17,8 @@ import {
 import {
   Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Settings, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -28,9 +30,11 @@ export default function MarketDetailPage() {
   const [externalData, setExternalData] = useState<MarketExternalData[]>([]);
   const [classification, setClassification] = useState<MarketClassification | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState<MarketReview[]>([]);
   const [porResult, setPorResult] = useState<RunSummary | null>(null);
   const [porRawResult, setPorRawResult] = useState<string | null>(null);
   const [effectiveAiPrompt, setEffectiveAiPrompt] = useState<string | null>(null);
+  const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null);
 
   // ── Market settings dialog state ──
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -90,6 +94,7 @@ export default function MarketDetailPage() {
       setMarket(info?.market ?? null);
       setExternalData(info?.external_data ?? []);
       setClassification(info?.classification ?? null);
+      setReviews(info?.reviews ?? []);
     } catch {
       // Error handled by admin-api
     } finally {
@@ -132,17 +137,32 @@ export default function MarketDetailPage() {
   // Use PoR raw result if available, otherwise fall back to market's ai_result
   const displayAiResult = porRawResult || market.ai_result;
 
+  // For conflict markets, use the selected review's ai_result if one is picked
+  const selectedReview = reviews.find((r) => r.id === selectedReviewId);
+  const conflictAiResult = selectedReview?.ai_result ?? displayAiResult;
+
   // Build the resolve form content passed into PorTrigger's Resolve tab
-  const resolveForm = (displayAiResult || porResult) ? (
-    <ResolveForm
-      marketId={market.id}
-      porResult={porResult}
-      rawAiResult={displayAiResult || undefined}
-      aiPrompt={effectiveAiPrompt || market.ai_prompt || undefined}
-      onResolved={load}
-      onRevertToMonitoring={market.status === "pending_verification" ? handleBackToMonitoring : undefined}
-    />
-  ) : undefined;
+  const isConflict = market.status === "conflict";
+  const resolveForm = (
+    <div className="space-y-4">
+      {isConflict && reviews.length >= 2 && (
+        <ConflictReviews
+          reviews={reviews}
+          selectedReviewId={selectedReviewId}
+          onSelect={setSelectedReviewId}
+        />
+      )}
+      <ResolveForm
+        marketId={market.id}
+        porResult={porResult}
+        rawAiResult={isConflict ? (conflictAiResult || undefined) : (displayAiResult || undefined)}
+        aiPrompt={effectiveAiPrompt || market.ai_prompt || undefined}
+        mode={isConflict ? "conflict" : "review"}
+        onResolved={load}
+        onRevertToMonitoring={(market.status === "pending_verification" || market.status === "conflict") ? handleBackToMonitoring : undefined}
+      />
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -150,6 +170,37 @@ export default function MarketDetailPage() {
       <div className="text-xs text-muted-foreground">
         Admin &rarr; Market Monitor &rarr; <span className="text-foreground">{market.title}</span>
       </div>
+
+      {/* Review Status Indicator */}
+      {market.status !== "resolved" && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-muted-foreground">Review Status</span>
+              {reviews.length === 0 && (
+                <Badge variant="outline" className="text-[10px] bg-muted/20 text-muted-foreground">
+                  0/2 reviews — Pending
+                </Badge>
+              )}
+              {reviews.length === 1 && (
+                <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-400">
+                  1/2 reviews — Waiting for second review
+                </Badge>
+              )}
+              {reviews.length >= 2 && market.status === "conflict" && (
+                <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400">
+                  2/2 reviews — Conflict (mismatched)
+                </Badge>
+              )}
+              {reviews.length >= 2 && market.status !== "conflict" && (
+                <Badge variant="outline" className="text-[10px] bg-green-500/10 text-green-400">
+                  2/2 reviews — Resolved (matching)
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <MarketDetail
         market={market}
@@ -204,8 +255,8 @@ export default function MarketDetailPage() {
         />
       )}
 
-      {/* Action panel — shown for monitoring and pending_verification */}
-      {(market.status === "monitoring" || market.status === "pending_verification") && (
+      {/* Action panel — shown for monitoring, pending_verification, and conflict */}
+      {(market.status === "monitoring" || market.status === "pending_verification" || market.status === "conflict") && (
         <PorTrigger
           question={market.title}
           aiPrompt={effectiveAiPrompt || market.ai_prompt || undefined}

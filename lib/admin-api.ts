@@ -2,6 +2,7 @@ import type {
   AdminMarket,
   AdminMarketStatus,
   MarketInfo,
+  MarketReview,
   DisputeListResponse,
   DisputeSubmitResponse,
   DisputeAcceptResponse,
@@ -95,9 +96,10 @@ export async function fetchMarket(
   qs.set("code", code);
   qs.set("id", String(id));
   const res = await adminFetch<MarketInfo>(
-    `${API_BASE}/markets/info?${qs.toString()}`
+    `${API_BASE}/markets/id?${qs.toString()}`
   );
-  return res.market ? res : null;
+  if (!res.market) return null;
+  return { ...res, reviews: res.reviews ?? [] };
 }
 
 export async function fetchPublicMarket(
@@ -148,6 +150,20 @@ export async function updateMarket(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ code, id, ...data }),
+  });
+}
+
+// ─── Reviews ─────────────────────────────────────────────────────────────────
+
+export async function submitReview(
+  code: string,
+  marketId: number,
+  aiResult: string
+): Promise<{ review: MarketReview }> {
+  return adminFetch<{ review: MarketReview }>(`${API_BASE}/markets/submit_review`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code, market_id: marketId, ai_result: aiResult }),
   });
 }
 

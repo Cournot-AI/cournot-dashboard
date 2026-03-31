@@ -4,8 +4,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRole } from "@/lib/role";
-import { updateMarket } from "@/lib/admin-api";
-import type { RunSummary } from "@/lib/types";
+import { updateMarket, submitReview } from "@/lib/admin-api";
+import type { RunSummary, MarketReview } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -306,11 +306,13 @@ interface ResolveFormProps {
   porResult: RunSummary | null;
   rawAiResult?: string;
   aiPrompt?: string;
+  /** "review" = submit a review (pending_verification/monitoring), "conflict" = resolve a conflict */
+  mode?: "review" | "conflict";
   onResolved?: () => void;
   onRevertToMonitoring?: (silenceDeadline: string) => void;
 }
 
-export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, onResolved, onRevertToMonitoring }: ResolveFormProps) {
+export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode = "review", onResolved, onRevertToMonitoring }: ResolveFormProps) {
   const possibleOutcomes = extractPossibleOutcomes(aiPrompt);
   const { accessCode } = useRole();
   const [loading, setLoading] = useState(false);
@@ -413,11 +415,16 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, onReso
     if (!accessCode || !outcome.trim()) return;
     setLoading(true);
     try {
-      await updateMarket(accessCode, marketId, {
-        status: "resolved",
-        ai_result: buildAiResult(),
-      });
-      toast.success("Market resolved");
+      if (mode === "review") {
+        await submitReview(accessCode, marketId, buildAiResult());
+        toast.success("Review submitted");
+      } else {
+        await updateMarket(accessCode, marketId, {
+          status: "resolved",
+          ai_result: buildAiResult(),
+        });
+        toast.success("Conflict resolved");
+      }
       onResolved?.();
     } catch {
       // Error handled by admin-api
@@ -599,11 +606,16 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, onReso
 
     setAdvancedLoading(true);
     try {
-      await updateMarket(accessCode, marketId, {
-        status: "resolved",
-        ai_result: finalJson,
-      });
-      toast.success("Market resolved with manual edits");
+      if (mode === "review") {
+        await submitReview(accessCode, marketId, finalJson);
+        toast.success("Review submitted with manual edits");
+      } else {
+        await updateMarket(accessCode, marketId, {
+          status: "resolved",
+          ai_result: finalJson,
+        });
+        toast.success("Conflict resolved with manual edits");
+      }
       setAdvancedOpen(false);
       onResolved?.();
     } catch {
@@ -615,17 +627,26 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, onReso
 
   return (
     <>
-      <Card className="border-green-500/30 bg-green-500/5">
+      <Card className={mode === "conflict" ? "border-red-500/30 bg-red-500/5" : "border-green-500/30 bg-green-500/5"}>
         <CardContent className="p-6">
-          <p className="text-sm font-medium text-green-400 mb-1 flex items-center gap-2">
+          <p className={`text-sm font-medium mb-1 flex items-center gap-2 ${mode === "conflict" ? "text-red-400" : "text-green-400"}`}>
             <CheckCircle className="h-4 w-4" />
-            Final Resolve
+            {mode === "conflict" ? "Resolve Conflict" : "Submit Review"}
           </p>
           <p className="text-xs text-muted-foreground mb-4 max-w-xl leading-relaxed">
-            This form constructs the final <span className="font-mono text-[11px]">ai_result</span> from
-            the fields below and resolves the market. If a PoR run or dispute result exists, your
-            outcome, confidence, and reasoning will be merged into the full artifacts JSON.
-            <strong className="text-amber-400"> Once resolved, the market outcome is final and cannot be changed.</strong>
+            {mode === "conflict" ? (
+              <>
+                This market has conflicting reviews. Select an outcome below or provide a custom resolution.
+                Your decision will finalize the market.
+                <strong className="text-amber-400"> Once resolved, the market outcome is final and cannot be changed.</strong>
+              </>
+            ) : (
+              <>
+                Submit your review for this market. Two matching reviews are required to resolve.
+                If your review conflicts with another admin&apos;s review, the market will enter conflict status
+                for manual resolution.
+              </>
+            )}
           </p>
           <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
             <div className="grid grid-cols-2 gap-4">
@@ -663,10 +684,10 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, onReso
               <button
                 type="submit"
                 disabled={loading || !outcome.trim()}
-                className="h-9 rounded-lg bg-green-600 px-4 text-sm font-medium text-white transition-colors hover:bg-green-600/90 disabled:opacity-50 inline-flex items-center gap-2"
+                className={`h-9 rounded-lg px-4 text-sm font-medium text-white transition-colors disabled:opacity-50 inline-flex items-center gap-2 ${mode === "conflict" ? "bg-red-600 hover:bg-red-600/90" : "bg-green-600 hover:bg-green-600/90"}`}
               >
                 {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                Final Resolve
+                {mode === "conflict" ? "Resolve Conflict" : "Submit Review"}
               </button>
               <button
                 type="button"
@@ -1175,14 +1196,104 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, onReso
               type="button"
               onClick={handleAdvancedSubmit}
               disabled={advancedLoading || (advancedTab === "raw" && !!advancedJsonError)}
-              className="h-9 rounded-lg bg-green-600 px-4 text-sm font-medium text-white transition-colors hover:bg-green-600/90 disabled:opacity-50 inline-flex items-center gap-2"
+              className={`h-9 rounded-lg px-4 text-sm font-medium text-white transition-colors disabled:opacity-50 inline-flex items-center gap-2 ${mode === "conflict" ? "bg-red-600 hover:bg-red-600/90" : "bg-green-600 hover:bg-green-600/90"}`}
             >
               {advancedLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              Resolve with Manual Edits
+              {mode === "conflict" ? "Resolve Conflict with Manual Edits" : "Submit Review with Manual Edits"}
             </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+// ── Conflict Reviews Display ──
+
+function parseReviewOutcome(aiResult: string): { outcome: string; confidence: number; reasoning: string } {
+  try {
+    const parsed = JSON.parse(aiResult);
+    return {
+      outcome: parsed.outcome ?? "",
+      confidence: parsed.confidence ?? 0,
+      reasoning:
+        parsed.artifacts?.reasoning_trace?.reasoning_summary ??
+        parsed.artifacts?.verdict?.metadata?.justification ??
+        parsed.reasoning ??
+        "",
+    };
+  } catch {
+    return { outcome: "", confidence: 0, reasoning: "" };
+  }
+}
+
+interface ConflictReviewsProps {
+  reviews: MarketReview[];
+  selectedReviewId: number | null;
+  onSelect: (id: number) => void;
+}
+
+export function ConflictReviews({ reviews, selectedReviewId, onSelect }: ConflictReviewsProps) {
+  return (
+    <div className="space-y-3">
+      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        Conflicting Reviews
+      </h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {reviews.map((review, i) => {
+          const parsed = parseReviewOutcome(review.ai_result);
+          const isSelected = selectedReviewId === review.id;
+          return (
+            <button
+              key={review.id}
+              type="button"
+              onClick={() => onSelect(review.id)}
+              className={`text-left rounded-lg border p-4 transition-colors ${
+                isSelected
+                  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                  : "border-border hover:border-primary/40 hover:bg-muted/20"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium">Review #{i + 1}</span>
+                <Badge variant="outline" className="text-[10px]">
+                  {review.name || "Admin"}
+                </Badge>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Outcome:</span>
+                  <span className={`text-sm font-semibold ${
+                    parsed.outcome === "YES" ? "text-green-400" :
+                    parsed.outcome === "NO" ? "text-red-400" :
+                    parsed.outcome === "INVALID" ? "text-yellow-400" :
+                    "text-foreground"
+                  }`}>
+                    {parsed.outcome || review.ai_outcome || "—"}
+                  </span>
+                </div>
+                {parsed.confidence > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Confidence:</span>
+                    <span className="text-xs font-mono">{Math.round(parsed.confidence * 100)}%</span>
+                  </div>
+                )}
+                {parsed.reasoning && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">Reasoning:</span>
+                    <p className="text-xs text-muted-foreground/80 mt-0.5 line-clamp-3">{parsed.reasoning}</p>
+                  </div>
+                )}
+                <div className="text-[10px] text-muted-foreground/60 mt-1">
+                  {review.created_time ? new Date(review.created_time).toLocaleString("en-US", {
+                    month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+                  }) : "—"}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }

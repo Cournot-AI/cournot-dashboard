@@ -344,7 +344,7 @@ export function getMatchStatus(c: MarketCase): MatchStatus {
 
 // ─── Admin Market Monitoring ───────────────────────────────────────────────
 
-export type AdminMarketStatus = "monitoring" | "pending_verification" | "resolved";
+export type AdminMarketStatus = "monitoring" | "pending_verification" | "resolved" | "conflict";
 
 export interface AdminMarket {
   id: number;
@@ -392,10 +392,21 @@ export interface MarketClassification {
   entity_roles: string; // JSON object as string
 }
 
+export interface MarketReview {
+  id: number;
+  market_id: number;
+  ai_result: string;
+  ai_outcome: string;
+  user_id: string;
+  name: string;
+  created_time: string;
+}
+
 export interface MarketInfo {
   market: AdminMarket;
   external_data: MarketExternalData[];
   classification: MarketClassification | null;
+  reviews: MarketReview[];
 }
 
 // ─── Disputes ────────────────────────────────────────────────────────────────

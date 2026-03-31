@@ -26,6 +26,7 @@ const SORT_OPTIONS: { label: string; value: SortField }[] = [
 type StatusFilter = AdminMarketStatus | "all";
 
 const STATUS_TABS: { label: string; value: StatusFilter }[] = [
+  { label: "Conflict", value: "conflict" },
   { label: "Pending Verification", value: "pending_verification" },
   { label: "Monitoring", value: "monitoring" },
   { label: "Resolved", value: "resolved" },
@@ -70,6 +71,8 @@ function formatDateTime(iso: string): { label: string; isActive: boolean } {
 
 function statusBadge(market: AdminMarket) {
   switch (market.status) {
+    case "conflict":
+      return <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400">Conflict</Badge>;
     case "monitoring":
       return <Badge variant="outline" className="text-[10px] bg-blue-500/10 text-blue-400">Monitoring</Badge>;
     case "pending_verification":
@@ -90,7 +93,7 @@ export function MarketTable() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<SortField>("expected_resolve_time");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("pending_verification");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("conflict");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [marketTypeFilter, setMarketTypeFilter] = useState<MarketTypeFilter>("all");
   const pageSize = 20;
@@ -250,7 +253,8 @@ export function MarketTable() {
                     key={m.id}
                     className={cn(
                       "cursor-pointer",
-                      m.status === "pending_verification" && "bg-amber-500/5"
+                      m.status === "pending_verification" && "bg-amber-500/5",
+                      m.status === "conflict" && "bg-red-500/5"
                     )}
                     onClick={() => router.push(`/admin/markets/${m.id}`)}
                   >

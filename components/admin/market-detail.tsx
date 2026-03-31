@@ -16,6 +16,8 @@ function formatDate(iso: string) {
 
 function statusBadge(market: AdminMarket) {
   switch (market.status) {
+    case "conflict":
+      return <Badge variant="outline" className="text-xs bg-red-500/10 text-red-400">Conflict</Badge>;
     case "monitoring":
       return <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-400">Monitoring</Badge>;
     case "pending_verification":
