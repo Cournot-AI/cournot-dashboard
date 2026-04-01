@@ -326,6 +326,7 @@ interface TocItem {
 const TOC_ITEMS: TocItem[] = [
   { id: "public-data-api", label: "Public Data API", heading: true },
   { id: "market-info", label: "Market Info", indent: true },
+  { id: "market-disputes", label: "Market Disputes", indent: true },
   { id: "por-pipeline-api", label: "PoR Pipeline API", heading: true },
   { id: "gateway", label: "Backend Gateway", indent: true },
   { id: "authentication", label: "Authentication", indent: true },
@@ -506,6 +507,75 @@ GET https://interface.cournot.ai/play/polymarket/markets/info?id=185557`}
             "This endpoint returns stored data from the Cournot platform, not live AI Oracle results.",
             "The ai_result and ai_outcome fields are empty strings until the market is resolved.",
             "The description field may contain HTML markup for resolution criteria.",
+          ]}
+        />
+
+        {/* ─── Market Disputes ─────────────────────────────────────────── */}
+        <EndpointSection
+          id="market-disputes"
+          method="GET"
+          path="/markets/disputes?code={code}&market_id={market_id}&dispute_type=manual&page_num=1&page_size=10"
+          title="Market Disputes"
+          icon={MessageSquareWarning}
+          description="Returns the dispute history for a given market. Disputes are challenges submitted by admins against a market's AI resolution, each containing the original and proposed outcomes with reasoning."
+          requestFields={[
+            { key: "code", type: "string", description: "Admin access code for authentication", required: true },
+            { key: "market_id", type: "integer", description: "The market ID to fetch disputes for", required: true },
+            { key: "dispute_type", type: "string", description: "Type of dispute to fetch. Currently only \"manual\" is supported", required: true },
+            { key: "page_num", type: "integer", description: "Page number for pagination (default: 1)" },
+            { key: "page_size", type: "integer", description: "Number of disputes per page (default: 10)" },
+          ]}
+          requestExample={`# Pass parameters as query strings
+GET https://interface.cournot.ai/play/polymarket/markets/disputes?code={code}&market_id=185557&dispute_type=manual&page_num=1&page_size=10`}
+          curlExample={`curl "https://interface.cournot.ai/play/polymarket/markets/disputes?code={code}&market_id=185557&dispute_type=manual&page_num=1&page_size=10"`}
+          responseFields={[
+            { key: "code", type: "integer", description: "Response status code. 0 = success." },
+            { key: "msg", type: "string", description: "Status message, e.g. \"Success\"" },
+            { key: "data.disputes", type: "Dispute[]", description: "Array of dispute objects for this market" },
+            { key: "data.disputes[].id", type: "integer", description: "Unique dispute identifier" },
+            { key: "data.disputes[].market_id", type: "integer", description: "Associated market ID" },
+            { key: "data.disputes[].dispute_type", type: "string", description: "Dispute type, e.g. \"manual\"" },
+            { key: "data.disputes[].previous_ai_result", type: "string", description: "The AI result before the dispute" },
+            { key: "data.disputes[].previous_ai_outcome", type: "string", description: "The AI outcome before the dispute (YES/NO/INVALID)" },
+            { key: "data.disputes[].proposed_ai_result", type: "string", description: "The proposed replacement AI result" },
+            { key: "data.disputes[].proposed_ai_outcome", type: "string", description: "The proposed replacement outcome" },
+            { key: "data.disputes[].reason", type: "string", description: "Reason provided for the dispute" },
+            { key: "data.disputes[].submitted_by", type: "string", description: "Name of the admin who submitted the dispute" },
+            { key: "data.disputes[].is_accepted", type: "boolean", description: "Whether the dispute has been accepted" },
+            { key: "data.disputes[].accepted_by", type: "string", description: "Name of the admin who accepted the dispute (empty if not accepted)" },
+            { key: "data.disputes[].accepted_time", type: "string", description: "When the dispute was accepted (ISO 8601, empty if not accepted)" },
+            { key: "data.disputes[].created_time", type: "string", description: "When the dispute was created (ISO 8601)" },
+            { key: "data.total", type: "integer", description: "Total number of disputes matching the query" },
+          ]}
+          responseExample={`{
+  "code": 0,
+  "msg": "Success",
+  "data": {
+    "disputes": [
+      {
+        "id": 42,
+        "market_id": 185557,
+        "dispute_type": "manual",
+        "previous_ai_result": "{\\"outcome\\":\\"YES\\",\\"confidence\\":0.92,...}",
+        "previous_ai_outcome": "YES",
+        "proposed_ai_result": "{\\"outcome\\":\\"NO\\",\\"confidence\\":0.85,...}",
+        "proposed_ai_outcome": "NO",
+        "reason": "New evidence shows the event was cancelled",
+        "submitted_by": "admin_1",
+        "is_accepted": true,
+        "accepted_by": "admin_2",
+        "accepted_time": "2025-06-15T14:30:00Z",
+        "created_time": "2025-06-15T12:00:00Z"
+      }
+    ],
+    "total": 1
+  }
+}`}
+          notes={[
+            "Requires a valid admin access code.",
+            "Only dispute_type \"manual\" is currently supported.",
+            "Disputes are returned in reverse chronological order (newest first).",
+            "The previous_ai_result and proposed_ai_result fields contain JSON-encoded AI result objects.",
           ]}
         />
 

@@ -53,8 +53,8 @@ const MARKET_TYPE_OPTIONS: { label: string; value: MarketTypeFilter }[] = [
 
 function formatDate(iso: string) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short", day: "numeric", year: "numeric",
+  return new Date(iso).toLocaleString("en-US", {
+    month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
   });
 }
 
