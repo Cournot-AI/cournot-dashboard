@@ -649,7 +649,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
             )}
           </p>
           <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <OutcomeSelect
                   value={outcome}
@@ -680,7 +680,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
               />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 type="submit"
                 disabled={loading || !outcome.trim()}
@@ -805,7 +805,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                       Verdict
                     </h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <OutcomeSelect
                           value={summarizedFields.outcome}
@@ -860,7 +860,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
                           className="text-xs"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <OutcomeSelect
                             value={summarizedFields.llmReviewOutcome}
@@ -922,7 +922,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
                           className="text-xs"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <OutcomeSelect
                             value={summarizedFields.preliminaryOutcome}
@@ -1051,7 +1051,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
                                 <Trash2 className="h-3 w-3" />
                               </button>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <div>
                                 <label className="text-xs text-muted-foreground mb-1 block">
                                   Source URL
@@ -1079,7 +1079,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
                                 />
                               </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <div>
                                 <label className="text-xs text-muted-foreground mb-1 block">
                                   Tier

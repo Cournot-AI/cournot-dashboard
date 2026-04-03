@@ -38,9 +38,9 @@ export function MarketDetail({ market, classification, actions }: { market: Admi
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <h2 className="text-lg font-semibold truncate">{market.title}</h2>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <Badge variant="outline" className={cn("text-[10px]", market.market_timing_type === "time_based" ? "bg-cyan-500/10 text-cyan-400" : market.market_timing_type === "event_based" ? "bg-orange-500/10 text-orange-400" : "text-muted-foreground")}>
               {market.market_timing_type || "unset"}
             </Badge>
@@ -76,7 +76,7 @@ export function MarketDetail({ market, classification, actions }: { market: Admi
           </a>
         )}
 
-        <div className="grid grid-cols-6 gap-4 mt-4 text-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mt-4 text-sm">
           <div>
             <span className="text-xs text-muted-foreground">Start</span>
             <p>{formatDate(market.start_time)}</p>
@@ -138,12 +138,12 @@ function ExternalDataItem({ d }: { d: MarketExternalData }) {
 
   return (
     <div className="rounded-lg border border-border p-4 space-y-3">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Badge variant="outline" className="text-[10px] shrink-0">{d.source_name}</Badge>
           <span className="text-sm font-medium truncate">{d.title}</span>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Badge
             variant="outline"
             className={cn("text-[10px]", d.event_concluded ? "bg-green-500/10 text-green-400" : "bg-blue-500/10 text-blue-400")}
@@ -165,7 +165,7 @@ function ExternalDataItem({ d }: { d: MarketExternalData }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
         <div>
           <span className="text-muted-foreground">External ID</span>
           <p className="font-mono">{d.external_id}</p>

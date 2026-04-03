@@ -65,7 +65,7 @@ export function MarketForm() {
             <Input value={platformUrl} onChange={(e) => setPlatformUrl(e.target.value)} placeholder="https://polymarket.com/..." />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Start Time *</label>
               <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} />

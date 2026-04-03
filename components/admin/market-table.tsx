@@ -127,7 +127,7 @@ export function MarketTable() {
   return (
     <div className="space-y-4">
       {/* Status filter tabs */}
-      <div className="flex gap-1 rounded-lg bg-muted/30 p-1 w-fit">
+      <div className="flex flex-wrap gap-1 rounded-lg bg-muted/30 p-1 w-fit overflow-x-auto">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -218,7 +218,7 @@ export function MarketTable() {
       </div>
 
       <Card>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

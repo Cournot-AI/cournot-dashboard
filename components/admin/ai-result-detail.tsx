@@ -75,7 +75,7 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
             <h3 className="text-sm font-semibold">AI Verdict</h3>
           </div>
 
-          <div className="grid grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <span className="text-xs text-muted-foreground">Outcome</span>
               <p className={cn("text-2xl font-bold", {
@@ -352,7 +352,7 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
               <h3 className="text-sm font-semibold">Prompt Analysis</h3>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 text-sm">
               {classification && (
                 <div>
                   <span className="text-xs text-muted-foreground">Market Type</span>

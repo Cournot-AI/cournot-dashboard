@@ -580,7 +580,7 @@ export function MarketDisputes({
             </div>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Provider</label>
             <Select value={selectedProvider ?? "__default__"}
@@ -713,7 +713,7 @@ export function MarketDisputes({
                   <p className="text-xs text-muted-foreground mb-3">
                     Generate a dispute above to review and submit the result.
                   </p>
-                  <div className="grid grid-cols-2 gap-4 max-w-xl">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
                     <div>
                       <label className="text-xs text-muted-foreground mb-1 block">Outcome</label>
                       <div className="h-9 rounded-md border border-border bg-muted/20" />
@@ -755,7 +755,7 @@ export function MarketDisputes({
 
                   {!advancedOpen ? (
                     <form onSubmit={handleSubmitToBackend} className="space-y-4 max-w-xl">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <OutcomeSelect
                           value={outcome}
                           onValueChange={setOutcome}
@@ -779,7 +779,7 @@ export function MarketDisputes({
                           rows={3}
                         />
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
                         <button
                           type="submit"
                           disabled={submitLoading || !outcome.trim()}
@@ -819,7 +819,7 @@ export function MarketDisputes({
                       {advancedJsonError && (
                         <p className="text-xs text-red-400">JSON error: {advancedJsonError}</p>
                       )}
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
                         <button
                           type="button"
                           onClick={handleSubmitToBackend as any}
@@ -989,7 +989,7 @@ function DisputeItem({
 
       {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
+        <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col w-[95vw] sm:w-auto">
           <DialogHeader>
             <DialogTitle className="text-sm">
               Dispute #{dispute.id} &mdash; {dispute.previous_ai_outcome || "—"} &rarr; {dispute.proposed_ai_outcome || "—"}

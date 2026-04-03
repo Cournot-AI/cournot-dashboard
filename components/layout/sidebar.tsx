@@ -57,7 +57,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-14 z-30 h-[calc(100vh-3.5rem)] border-r border-border bg-background transition-all duration-200",
+        "fixed left-0 top-14 z-30 h-[calc(100vh-3.5rem)] border-r border-border bg-background transition-all duration-200 hidden md:block",
         collapsed ? "w-14" : "w-52"
       )}
     >

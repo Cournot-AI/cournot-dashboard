@@ -57,8 +57,8 @@ export default function RootLayout({
             <Topbar />
             <div className="flex">
               <Sidebar />
-              <main className="ml-52 flex-1 min-h-[calc(100vh-3.5rem)]">
-                <div className="p-6 max-w-[1400px] mx-auto">{children}</div>
+              <main className="ml-0 md:ml-52 flex-1 min-h-[calc(100vh-3.5rem)]">
+                <div className="p-4 md:p-6 max-w-[1400px] mx-auto">{children}</div>
               </main>
             </div>
             <Toaster
