@@ -1,20 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Bell, LogIn, LogOut } from "lucide-react";
+import { Search, Bell, LogIn, LogOut, Menu } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { useSidebar } from "./sidebar-context";
 import { useRole } from "@/lib/role";
 import { CodeEntryDialog } from "@/components/auth/code-entry-dialog";
 import { Badge } from "@/components/ui/badge";
 
 export function Topbar() {
   const { isAuthenticated, role, login, logout } = useRole();
+  const { toggleMobile } = useSidebar();
   const [codeDialogOpen, setCodeDialogOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/80 backdrop-blur-sm px-6">
-      {/* Left: Logo */}
-      <div className="h-10 w-36 overflow-hidden flex items-center justify-center">
+    <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/80 backdrop-blur-sm px-4 md:px-6">
+      {/* Left: Hamburger + Logo */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={toggleMobile}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
+          aria-label="Toggle sidebar"
+        >
+          <Menu className="h-4 w-4" />
+        </button>
+        <div className="h-10 w-36 overflow-hidden flex items-center justify-center">
         <img
           src="/Cournot_Black_Horizontal-01.png"
           alt="Cournot"
@@ -25,6 +35,7 @@ export function Topbar() {
           alt="Cournot"
           className="h-[7rem] w-auto max-w-none hidden dark:block"
         />
+        </div>
       </div>
 
       {/* Center: Search */}

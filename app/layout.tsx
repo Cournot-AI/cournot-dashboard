@@ -9,6 +9,7 @@ import { RouteTracker } from "@/components/layout/route-tracker";
 import { Toaster } from "sonner";
 import { GA_ID } from "@/lib/analytics";
 import { RoleProvider } from "@/components/auth/role-provider";
+import { SidebarProvider } from "@/components/layout/sidebar-context";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -53,6 +54,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} font-[family-name:var(--font-geist-sans)] antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <RoleProvider>
+            <SidebarProvider>
             <RouteTracker />
             <Topbar />
             <div className="flex">
@@ -61,6 +63,7 @@ export default function RootLayout({
                 <div className="p-4 md:p-6 max-w-[1400px] mx-auto">{children}</div>
               </main>
             </div>
+            </SidebarProvider>
             <Toaster
               theme="dark"
               position="bottom-right"
