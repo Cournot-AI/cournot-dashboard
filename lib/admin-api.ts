@@ -108,7 +108,7 @@ export async function fetchPublicMarket(
   const qs = new URLSearchParams();
   qs.set("id", String(id));
   const res = await adminFetch<MarketInfo>(
-    `${API_BASE}/markets/info?${qs.toString()}`
+    `${API_BASE}/markets/id?${qs.toString()}`
   );
   return res.market ? res : null;
 }

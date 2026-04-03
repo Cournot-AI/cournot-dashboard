@@ -438,7 +438,7 @@ export default function DeveloperPage() {
         <EndpointSection
           id="market-info"
           method="GET"
-          path="/markets/info?id={market_id}"
+          path="/markets/id?id={market_id}"
           title="Market Info"
           icon={Info}
           description="Returns full details for a given market stored on the Cournot platform, including current status, classification, external data, and AI resolution results (if resolved). This is a direct data endpoint — it reads from Cournot's database, not the AI Oracle."
@@ -446,8 +446,8 @@ export default function DeveloperPage() {
             { key: "id", type: "integer", description: "The market ID to look up", required: true },
           ]}
           requestExample={`# No request body — pass id as a query parameter
-GET https://interface.cournot.ai/play/polymarket/markets/info?id=185557`}
-          curlExample={`curl "https://interface.cournot.ai/play/polymarket/markets/info?id=185557"`}
+GET https://interface.cournot.ai/play/polymarket/markets/id?id=185557`}
+          curlExample={`curl "https://interface.cournot.ai/play/polymarket/markets/id?id=185557"`}
           responseFields={[
             { key: "code", type: "integer", description: "Response status code. 0 = success." },
             { key: "msg", type: "string", description: "Status message, e.g. \"Success\"" },
