@@ -229,7 +229,7 @@ export default function MarketDetailPage() {
         mode={isConflict ? "conflict" : "review"}
         onResolved={load}
         onRevertToMonitoring={(market.status === "pending_verification" || market.status === "conflict") ? handleBackToMonitoring : undefined}
-        onCloseMarket={(market.status === "pending_verification" || market.status === "conflict") ? handleCloseMarket : undefined}
+        onCloseMarket={(market.status === "monitoring" || market.status === "pending_verification" || market.status === "conflict") ? handleCloseMarket : undefined}
       />
     </div>
   );
