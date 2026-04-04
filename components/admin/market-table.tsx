@@ -30,6 +30,7 @@ const STATUS_TABS: { label: string; value: StatusFilter }[] = [
   { label: "Pending Verification", value: "pending_verification" },
   { label: "Monitoring", value: "monitoring" },
   { label: "Resolved", value: "resolved" },
+  { label: "Closed", value: "closed" },
   { label: "All", value: "all" },
 ];
 
@@ -79,6 +80,8 @@ function statusBadge(market: AdminMarket) {
       return <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-400">Pending Verification</Badge>;
     case "resolved":
       return <Badge variant="outline" className="text-[10px] text-muted-foreground">Resolved</Badge>;
+    case "closed":
+      return <Badge variant="outline" className="text-[10px] bg-gray-500/10 text-gray-400">Closed</Badge>;
     default:
       return <Badge variant="outline" className="text-[10px]">{market.status}</Badge>;
   }
@@ -134,7 +137,7 @@ export function MarketTable() {
             onClick={() => {
               setStatusFilter(tab.value);
               setPage(1);
-              if (tab.value === "resolved") {
+              if (tab.value === "resolved" || tab.value === "closed") {
                 setSort("updated_time");
                 setOrder("desc");
               } else {

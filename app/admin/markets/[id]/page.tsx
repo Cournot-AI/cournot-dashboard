@@ -19,9 +19,65 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Settings, Clock } from "lucide-react";
+import { Loader2, Settings, Clock, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+function CloseMarketAction({ onClose }: { onClose: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleConfirm() {
+    setLoading(true);
+    try {
+      await onClose();
+      setOpen(false);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="h-9 rounded-lg border border-red-500/40 bg-red-500/5 px-4 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/15 inline-flex items-center gap-2"
+      >
+        <XCircle className="h-3.5 w-3.5" />
+        Close Market
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Close Market</DialogTitle>
+            <DialogDescription className="text-xs">
+              Are you sure? This permanently closes the market. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="h-9 rounded-lg border border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirm}
+              disabled={loading}
+              className="h-9 rounded-lg bg-red-600 px-4 text-sm font-medium text-white transition-colors hover:bg-red-600/90 disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Close Market
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 
 export default function MarketDetailPage() {
   const params = useParams<{ id: string }>();
@@ -118,6 +174,19 @@ export default function MarketDetailPage() {
     }
   }
 
+  async function handleCloseMarket() {
+    if (!accessCode || !market) return;
+    try {
+      await updateMarket(accessCode, market.id, {
+        status: "closed",
+      });
+      toast.success("Market closed");
+      load();
+    } catch {
+      // Error handled by admin-api
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
@@ -160,6 +229,7 @@ export default function MarketDetailPage() {
         mode={isConflict ? "conflict" : "review"}
         onResolved={load}
         onRevertToMonitoring={(market.status === "pending_verification" || market.status === "conflict") ? handleBackToMonitoring : undefined}
+        onCloseMarket={(market.status === "pending_verification" || market.status === "conflict") ? handleCloseMarket : undefined}
       />
     </div>
   );
@@ -172,7 +242,7 @@ export default function MarketDetailPage() {
       </div>
 
       {/* Review Status Indicator */}
-      {market.status !== "resolved" && (
+      {market.status !== "resolved" && market.status !== "closed" && (
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -268,7 +338,25 @@ export default function MarketDetailPage() {
         />
       )}
 
-      {/* resolved: read-only, no action buttons */}
+      {/* Closed: read-only terminal state */}
+      {market.status === "closed" && (
+        <Card className="border-gray-500/30 bg-gray-500/5">
+          <CardContent className="p-6">
+            <p className="text-sm font-medium text-gray-400 flex items-center gap-2">
+              <XCircle className="h-4 w-4" />
+              Market Closed
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              This market has been permanently closed. No further actions are available.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Resolved: close market action */}
+      {market.status === "resolved" && (
+        <CloseMarketAction onClose={handleCloseMarket} />
+      )}
 
       {/* Market Settings Dialog */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>

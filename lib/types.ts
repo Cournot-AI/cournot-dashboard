@@ -344,7 +344,7 @@ export function getMatchStatus(c: MarketCase): MatchStatus {
 
 // ─── Admin Market Monitoring ───────────────────────────────────────────────
 
-export type AdminMarketStatus = "monitoring" | "pending_verification" | "resolved" | "conflict";
+export type AdminMarketStatus = "monitoring" | "pending_verification" | "resolved" | "conflict" | "closed";
 
 export interface AdminMarket {
   id: number;

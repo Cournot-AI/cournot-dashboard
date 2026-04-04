@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, ArrowLeft, Pencil, ChevronDown, Plus, Trash2, Clock } from "lucide-react";
+import { Loader2, CheckCircle, ArrowLeft, Pencil, ChevronDown, Plus, Trash2, Clock, XCircle } from "lucide-react";
 
 // ── Summarized Fields types ──
 
@@ -310,9 +310,10 @@ interface ResolveFormProps {
   mode?: "review" | "conflict";
   onResolved?: () => void;
   onRevertToMonitoring?: (silenceDeadline: string) => void;
+  onCloseMarket?: () => void;
 }
 
-export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode = "review", onResolved, onRevertToMonitoring }: ResolveFormProps) {
+export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode = "review", onResolved, onRevertToMonitoring, onCloseMarket }: ResolveFormProps) {
   const possibleOutcomes = extractPossibleOutcomes(aiPrompt);
   const { accessCode } = useRole();
   const [loading, setLoading] = useState(false);
@@ -451,6 +452,21 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
       setCustomHours("");
     } finally {
       setRevertLoading(false);
+    }
+  }
+
+  // ── Close Market dialog state ──
+  const [closeOpen, setCloseOpen] = useState(false);
+  const [closeLoading, setCloseLoading] = useState(false);
+
+  async function handleCloseMarket() {
+    if (!onCloseMarket) return;
+    setCloseLoading(true);
+    try {
+      await onCloseMarket();
+      setCloseOpen(false);
+    } finally {
+      setCloseLoading(false);
     }
   }
 
@@ -709,6 +725,17 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
                   Revert to Monitoring
                 </button>
               )}
+              {onCloseMarket && (
+                <button
+                  type="button"
+                  onClick={() => setCloseOpen(true)}
+                  disabled={loading}
+                  className="h-9 rounded-lg border border-red-500/40 bg-red-500/5 px-4 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/15 disabled:opacity-50 inline-flex items-center gap-2"
+                >
+                  <XCircle className="h-3.5 w-3.5" />
+                  Close Market
+                </button>
+              )}
             </div>
           </form>
         </CardContent>
@@ -775,6 +802,36 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
               className="h-9 rounded-lg border border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50"
             >
               Cancel
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Close Market Confirmation Dialog */}
+      <Dialog open={closeOpen} onOpenChange={setCloseOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Close Market</DialogTitle>
+            <DialogDescription className="text-xs">
+              Are you sure? This permanently closes the market. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setCloseOpen(false)}
+              className="h-9 rounded-lg border border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleCloseMarket}
+              disabled={closeLoading}
+              className="h-9 rounded-lg bg-red-600 px-4 text-sm font-medium text-white transition-colors hover:bg-red-600/90 disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              {closeLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Close Market
             </button>
           </DialogFooter>
         </DialogContent>

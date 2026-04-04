@@ -24,6 +24,8 @@ function statusBadge(market: AdminMarket) {
       return <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-400">Pending Verification</Badge>;
     case "resolved":
       return <Badge variant="outline" className="text-xs text-muted-foreground">Resolved</Badge>;
+    case "closed":
+      return <Badge variant="outline" className="text-xs bg-gray-500/10 text-gray-400">Closed</Badge>;
     default:
       return <Badge variant="outline" className="text-xs">{market.status}</Badge>;
   }
