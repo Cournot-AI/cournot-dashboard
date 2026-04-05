@@ -230,6 +230,7 @@ export default function MarketDetailPage() {
         onResolved={load}
         onRevertToMonitoring={(market.status === "pending_verification" || market.status === "conflict") ? handleBackToMonitoring : undefined}
         onCloseMarket={(market.status === "monitoring" || market.status === "pending_verification" || market.status === "conflict") ? handleCloseMarket : undefined}
+        requireRerun={market.status === "monitoring"}
       />
     </div>
   );

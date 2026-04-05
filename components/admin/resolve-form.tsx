@@ -311,12 +311,15 @@ interface ResolveFormProps {
   onResolved?: () => void;
   onRevertToMonitoring?: (silenceDeadline: string) => void;
   onCloseMarket?: () => void;
+  /** When true, submission is blocked until a rerun provides an ai_result */
+  requireRerun?: boolean;
 }
 
-export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode = "review", onResolved, onRevertToMonitoring, onCloseMarket }: ResolveFormProps) {
+export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode = "review", onResolved, onRevertToMonitoring, onCloseMarket, requireRerun }: ResolveFormProps) {
   const possibleOutcomes = extractPossibleOutcomes(aiPrompt);
   const { accessCode } = useRole();
   const [loading, setLoading] = useState(false);
+  const rerunNeeded = requireRerun && !rawAiResult && !porResult;
 
   // Extract initial values from existing rawAiResult if available
   function parseRawAiResult(): { outcome: string; confidence: string; reasoning: string } {
@@ -696,10 +699,16 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
               />
             </div>
 
+            {rerunNeeded && (
+              <p className="text-xs text-amber-400">
+                Run the AI pipeline first before submitting a review.
+              </p>
+            )}
+
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="submit"
-                disabled={loading || !outcome.trim()}
+                disabled={loading || !outcome.trim() || rerunNeeded}
                 className={`h-9 rounded-lg px-4 text-sm font-medium text-white transition-colors disabled:opacity-50 inline-flex items-center gap-2 ${mode === "conflict" ? "bg-red-600 hover:bg-red-600/90" : "bg-green-600 hover:bg-green-600/90"}`}
               >
                 {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
@@ -708,7 +717,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
               <button
                 type="button"
                 onClick={handleOpenAdvanced}
-                disabled={loading}
+                disabled={loading || rerunNeeded}
                 className="h-9 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-500/20 disabled:opacity-50 inline-flex items-center gap-2"
               >
                 <Pencil className="h-3.5 w-3.5" />
