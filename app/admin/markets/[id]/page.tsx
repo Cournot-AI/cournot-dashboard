@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useRole } from "@/lib/role";
 import { fetchMarket, updateMarket } from "@/lib/admin-api";
-import type { AdminMarket, RunSummary, MarketExternalData, MarketClassification, MarketReview } from "@/lib/types";
-import { MarketDetail, ExternalDataSection } from "@/components/admin/market-detail";
+import type { AdminMarket, RunSummary, MarketExternalData, MarketClassification, MarketReview, MarketImpact } from "@/lib/types";
+import { MarketDetail, ExternalDataSection, ImpactsSection } from "@/components/admin/market-detail";
 import { AiResultDetail } from "@/components/admin/ai-result-detail";
 import { PorTrigger } from "@/components/admin/por-trigger";
 import { MarketDisputes } from "@/components/admin/market-disputes";
@@ -87,6 +87,7 @@ export default function MarketDetailPage() {
   const [classification, setClassification] = useState<MarketClassification | null>(null);
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState<MarketReview[]>([]);
+  const [impacts, setImpacts] = useState<MarketImpact[]>([]);
   const [porResult, setPorResult] = useState<RunSummary | null>(null);
   const [porRawResult, setPorRawResult] = useState<string | null>(null);
   const [effectiveAiPrompt, setEffectiveAiPrompt] = useState<string | null>(null);
@@ -151,6 +152,7 @@ export default function MarketDetailPage() {
       setExternalData(info?.external_data ?? []);
       setClassification(info?.classification ?? null);
       setReviews(info?.reviews ?? []);
+      setImpacts(info?.impacts ?? []);
     } catch {
       // Error handled by admin-api
     } finally {
@@ -302,6 +304,11 @@ export default function MarketDetailPage() {
       {/* External Data */}
       {externalData.length > 0 && (
         <ExternalDataSection data={externalData} />
+      )}
+
+      {/* Event Impacts */}
+      {impacts.length > 0 && (
+        <ImpactsSection impacts={impacts} />
       )}
 
       {/* AI Result Detail — full evidence, reasoning, proofs */}

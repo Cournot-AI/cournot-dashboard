@@ -402,11 +402,41 @@ export interface MarketReview {
   created_time: string;
 }
 
+export interface CanonicalEvent {
+  id: number;
+  vertical: string;
+  event_type: string;
+  title: string;
+  entities: string;       // JSON string
+  summary: string;
+  dedup_key: string;
+  first_seen: string;
+  last_updated: string;
+  event_time: string;
+  is_active: boolean;
+  evidence_count: number;
+  metadata: string;       // JSON string
+}
+
+export interface MarketImpact {
+  id: number;
+  market_id: number;
+  canonical_event_id: number;
+  impact_type: string;
+  direction: string;
+  probability_delta: number;
+  confidence: number;
+  evidence_summary: string;
+  created_time: string;
+  canonical_event: CanonicalEvent;
+}
+
 export interface MarketInfo {
   market: AdminMarket;
   external_data: MarketExternalData[];
   classification: MarketClassification | null;
   reviews: MarketReview[];
+  impacts: MarketImpact[];
 }
 
 // ─── Disputes ────────────────────────────────────────────────────────────────

@@ -1,9 +1,9 @@
 "use client";
 
-import type { AdminMarket, MarketClassification, MarketExternalData } from "@/lib/types";
+import type { AdminMarket, MarketClassification, MarketExternalData, MarketImpact } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
@@ -224,6 +224,105 @@ export function ExternalDataSection({ data }: { data: MarketExternalData[] }) {
               <div className="space-y-4 mt-4">
                 {rest.map((d) => (
                   <ExternalDataItem key={d.id} d={d} />
+                ))}
+              </div>
+            </details>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Event Impacts Section ──
+
+function ImpactItem({ impact }: { impact: MarketImpact }) {
+  const ev = impact.canonical_event;
+  const isUp = impact.direction === "up";
+  const deltaColor = isUp ? "text-green-400" : "text-red-400";
+
+  return (
+    <div className="rounded-lg border border-border p-4 space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Badge variant="outline" className="text-[10px] shrink-0">{impact.impact_type}</Badge>
+          <span className={cn("inline-flex items-center gap-0.5 text-sm font-medium", deltaColor)}>
+            {isUp ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
+            {(impact.probability_delta >= 0 ? "+" : "")}{(impact.probability_delta * 100).toFixed(1)}%
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Badge
+            variant="outline"
+            className={cn(
+              "text-[10px]",
+              impact.confidence >= 0.8 ? "text-green-400" : impact.confidence >= 0.5 ? "text-amber-400" : "text-muted-foreground"
+            )}
+          >
+            confidence {impact.confidence.toFixed(2)}
+          </Badge>
+          <span className="text-[10px] text-muted-foreground">{formatDate(impact.created_time)}</span>
+        </div>
+      </div>
+
+      {impact.evidence_summary && (
+        <p className="text-xs text-muted-foreground">{impact.evidence_summary}</p>
+      )}
+
+      {/* Canonical Event */}
+      <div className="rounded-md border border-border/60 bg-muted/10 p-3 space-y-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <span className="text-sm font-medium">{ev.title}</span>
+          <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+            <Badge variant="outline" className="text-[10px]">{ev.vertical}</Badge>
+            <Badge variant="outline" className="text-[10px] text-muted-foreground">{ev.event_type}</Badge>
+            <Badge
+              variant="outline"
+              className={cn("text-[10px]", ev.is_active ? "bg-green-500/10 text-green-400" : "bg-muted/20 text-muted-foreground")}
+            >
+              {ev.is_active ? "Active" : "Inactive"}
+            </Badge>
+          </div>
+        </div>
+        {ev.summary && (
+          <p className="text-xs text-muted-foreground">{ev.summary}</p>
+        )}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <span className="text-muted-foreground">Event Time</span>
+            <p>{ev.event_time ? formatDate(ev.event_time) : "—"}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Evidence Count</span>
+            <p>{ev.evidence_count}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Last Updated</span>
+            <p>{ev.last_updated ? formatDate(ev.last_updated) : "—"}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ImpactsSection({ impacts }: { impacts: MarketImpact[] }) {
+  const [first, ...rest] = impacts;
+
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <h3 className="text-sm font-semibold mb-4">Event Impacts</h3>
+        <div className="space-y-4">
+          <ImpactItem impact={first} />
+          {rest.length > 0 && (
+            <details>
+              <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none">
+                {rest.length} more impact{rest.length > 1 ? "s" : ""}
+              </summary>
+              <div className="space-y-4 mt-4">
+                {rest.map((impact) => (
+                  <ImpactItem key={impact.id} impact={impact} />
                 ))}
               </div>
             </details>

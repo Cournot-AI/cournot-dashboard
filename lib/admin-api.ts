@@ -99,7 +99,7 @@ export async function fetchMarket(
     `${API_BASE}/markets/id?${qs.toString()}`
   );
   if (!res.market) return null;
-  return { ...res, reviews: res.reviews ?? [] };
+  return { ...res, reviews: res.reviews ?? [], impacts: res.impacts ?? [] };
 }
 
 export async function fetchPublicMarket(
