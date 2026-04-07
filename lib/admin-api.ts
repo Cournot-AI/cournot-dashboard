@@ -1,6 +1,9 @@
 import type {
   AdminMarket,
   AdminMarketStatus,
+  MarketClassification,
+  MarketExternalData,
+  MarketImpact,
   MarketInfo,
   MarketReview,
   DisputeListResponse,
@@ -49,6 +52,28 @@ async function adminFetch<T>(url: string, options?: RequestInit): Promise<T> {
   return json as T;
 }
 
+/** Like adminFetch but returns the full envelope so callers can access fields outside `data`. */
+async function adminFetchRaw(url: string, options?: RequestInit): Promise<Record<string, unknown>> {
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try {
+      const json = await res.json();
+      if (json.msg) msg = json.msg;
+      else if (json.detail) msg = json.detail;
+    } catch { /* ignore */ }
+    toast.error(msg);
+    throw new AdminApiError(msg);
+  }
+  const json = await res.json();
+  if (json.code && json.code !== 0) {
+    const errMsg = json.msg || json.detail || "API error";
+    toast.error(errMsg);
+    throw new AdminApiError(errMsg);
+  }
+  return json;
+}
+
 export async function checkIsAdmin(code: string): Promise<boolean> {
   const json = await adminFetch<{ is_admin: boolean }>(
     `${API_BASE}/markets/is_admin`,
@@ -88,6 +113,20 @@ export async function fetchMarkets(
   return { markets: data.markets ?? [], total: data.total ?? 0 };
 }
 
+function extractMarketInfo(raw: Record<string, unknown>): MarketInfo | null {
+  const data = (raw.data ?? raw) as Record<string, unknown>;
+  if (!data.market) return null;
+  // impacts may live inside data or at the envelope level
+  const impacts = (data.impacts ?? raw.impacts ?? []) as MarketImpact[];
+  return {
+    market: data.market as AdminMarket,
+    external_data: (data.external_data ?? []) as MarketExternalData[],
+    classification: (data.classification ?? null) as MarketClassification | null,
+    reviews: (data.reviews ?? []) as MarketReview[],
+    impacts,
+  };
+}
+
 export async function fetchMarket(
   code: string,
   id: number
@@ -95,11 +134,10 @@ export async function fetchMarket(
   const qs = new URLSearchParams();
   qs.set("code", code);
   qs.set("id", String(id));
-  const res = await adminFetch<MarketInfo>(
+  const raw = await adminFetchRaw(
     `${API_BASE}/markets/id?${qs.toString()}`
   );
-  if (!res.market) return null;
-  return { ...res, reviews: res.reviews ?? [], impacts: res.impacts ?? [] };
+  return extractMarketInfo(raw);
 }
 
 export async function fetchPublicMarket(
@@ -107,10 +145,10 @@ export async function fetchPublicMarket(
 ): Promise<MarketInfo | null> {
   const qs = new URLSearchParams();
   qs.set("id", String(id));
-  const res = await adminFetch<MarketInfo>(
+  const raw = await adminFetchRaw(
     `${API_BASE}/markets/id?${qs.toString()}`
   );
-  return res.market ? res : null;
+  return extractMarketInfo(raw);
 }
 
 export async function createMarket(

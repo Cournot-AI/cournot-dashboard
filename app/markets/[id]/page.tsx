@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useRole } from "@/lib/role";
 import { fetchPublicMarket } from "@/lib/admin-api";
-import type { AdminMarket, MarketExternalData, MarketClassification } from "@/lib/types";
-import { MarketDetail, ExternalDataSection } from "@/components/admin/market-detail";
+import type { AdminMarket, MarketExternalData, MarketClassification, MarketImpact } from "@/lib/types";
+import { MarketDetail, ExternalDataSection, ImpactsSection } from "@/components/admin/market-detail";
 import { AiResultDetail } from "@/components/admin/ai-result-detail";
 import { MarketDisputes } from "@/components/admin/market-disputes";
 import { CodeEntryDialog } from "@/components/auth/code-entry-dialog";
@@ -18,6 +18,7 @@ export default function PublicMarketDetailPage() {
   const [market, setMarket] = useState<AdminMarket | null>(null);
   const [externalData, setExternalData] = useState<MarketExternalData[]>([]);
   const [classification, setClassification] = useState<MarketClassification | null>(null);
+  const [impacts, setImpacts] = useState<MarketImpact[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +34,7 @@ export default function PublicMarketDetailPage() {
         setMarket(info.market);
         setExternalData(info.external_data ?? []);
         setClassification(info.classification ?? null);
+        setImpacts(info.impacts ?? []);
       }
     } catch {
       setError("Failed to load market");
@@ -70,6 +72,10 @@ export default function PublicMarketDetailPage() {
 
       {externalData.length > 0 && (
         <ExternalDataSection data={externalData} />
+      )}
+
+      {impacts.length > 0 && (
+        <ImpactsSection impacts={impacts} />
       )}
 
       {market.status === "resolved" && market.ai_result && (

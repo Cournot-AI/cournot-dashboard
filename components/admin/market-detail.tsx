@@ -3,7 +3,7 @@
 import type { AdminMarket, MarketClassification, MarketExternalData, MarketImpact } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, ArrowUp, ArrowDown } from "lucide-react";
+import { ExternalLink, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
@@ -239,7 +239,8 @@ export function ExternalDataSection({ data }: { data: MarketExternalData[] }) {
 function ImpactItem({ impact }: { impact: MarketImpact }) {
   const ev = impact.canonical_event;
   const isUp = impact.direction === "up";
-  const deltaColor = isUp ? "text-green-400" : "text-red-400";
+  const isDown = impact.direction === "down";
+  const deltaColor = isUp ? "text-green-400" : isDown ? "text-red-400" : "text-muted-foreground";
 
   return (
     <div className="rounded-lg border border-border p-4 space-y-3">
@@ -247,7 +248,7 @@ function ImpactItem({ impact }: { impact: MarketImpact }) {
         <div className="flex items-center gap-2 min-w-0">
           <Badge variant="outline" className="text-[10px] shrink-0">{impact.impact_type}</Badge>
           <span className={cn("inline-flex items-center gap-0.5 text-sm font-medium", deltaColor)}>
-            {isUp ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
+            {isUp ? <ArrowUp className="h-3.5 w-3.5" /> : isDown ? <ArrowDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
             {(impact.probability_delta >= 0 ? "+" : "")}{(impact.probability_delta * 100).toFixed(1)}%
           </span>
         </div>
