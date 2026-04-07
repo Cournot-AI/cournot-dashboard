@@ -11,6 +11,12 @@ import {
   ChevronLeft,
   Shield,
   PlusCircle,
+  Zap,
+  Rss,
+  Globe,
+  Layers,
+  Target,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -38,6 +44,17 @@ export function Sidebar() {
         { href: "/playground", label: "Playground", icon: FlaskConical },
       ],
     },
+    {
+      label: "Intelligence",
+      items: [
+        { href: "/intelligence", label: "Intelligence", icon: Zap },
+        { href: "/intelligence/feed", label: "Feed", icon: Rss },
+        { href: "/intelligence/verticals", label: "Verticals", icon: Globe },
+        { href: "/intelligence/markets", label: "Markets", icon: Target },
+        { href: "/intelligence/coverage", label: "Coverage", icon: Layers },
+        { href: "/intelligence/premium", label: "Premium", icon: Lock },
+      ],
+    },
   ];
 
   const adminGroup = {
@@ -61,6 +78,14 @@ export function Sidebar() {
     devGroup,
   ];
 
+  // Collect all hrefs so we can pick only the most specific match
+  const allHrefs = groups.flatMap((g) => g.items.map((i) => i.href));
+  const activeHref = pathname === "/"
+    ? "/"
+    : allHrefs
+        .filter((h) => h !== "/" && pathname.startsWith(h))
+        .sort((a, b) => b.length - a.length)[0] ?? "";
+
   const sidebarContent = (
     <nav className="flex flex-col h-full p-2">
       <div className="flex-1 space-y-4">
@@ -78,10 +103,7 @@ export function Sidebar() {
               )}
               <div className="space-y-0.5">
                 {group.items.map((item) => {
-                  const isActive =
-                    item.href === "/"
-                      ? pathname === "/"
-                      : pathname.startsWith(item.href);
+                  const isActive = item.href === activeHref;
                   return (
                     <Link
                       key={item.href}
