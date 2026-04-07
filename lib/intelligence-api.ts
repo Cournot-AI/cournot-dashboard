@@ -33,7 +33,7 @@ async function premiumFetch<T>(path: string, code: string, params?: Record<strin
   return publicFetch<T>(path, merged);
 }
 
-// ─── Public types ────────────────────────────────────────────────────────────
+// ─── Public types (matching actual API responses) ────────────────────────────
 
 export interface OverviewVertical {
   vertical: string;
@@ -50,20 +50,18 @@ export interface OverviewData {
   verticals: OverviewVertical[];
 }
 
+// Feed impact preview — matches actual top_impacts items
 export interface FeedImpactPreview {
-  id: number;
   market_id: number;
   market_title?: string;
   impact_type: string;
   direction: string;
-  probability_delta: number;
   confidence: number;
-  evidence_summary: string;
-  created_time: string;
 }
 
+// Feed event — matches actual items in /public/feed
 export interface FeedEvent {
-  id: number;
+  canonical_event_id: number;
   vertical: string;
   event_type: string;
   title: string;
@@ -74,8 +72,15 @@ export interface FeedEvent {
   event_time: string;
   is_active: boolean;
   evidence_count: number;
-  metadata: string;
-  top_impacts: FeedImpactPreview[];
+  impacted_markets_count: number;
+  top_impacts: FeedImpactPreview[] | null;
+}
+
+// Raw feed response — data.items + data.total
+interface RawFeedData {
+  items: FeedEvent[];
+  total: number;
+  public_delay_minutes?: number;
 }
 
 export interface FeedData {
@@ -83,26 +88,34 @@ export interface FeedData {
   total: number;
 }
 
+// Vertical info — matches actual /public/verticals response
 export interface VerticalInfo {
   vertical: string;
-  market_count: number;
-  event_count: number;
-  impact_count: number;
+  display_name: string;
+  enabled: boolean;
+  sources: string;
+  markets_count: number;
+  events_count: number;
+  description: string;
 }
 
 export interface VerticalsData {
   verticals: VerticalInfo[];
 }
 
+// Catalog entity — matches actual /public/catalog items
 export interface CatalogEntity {
-  id: number;
-  entity: string;
-  entity_type: string;
   vertical: string;
+  entity_type: string;
+  entity_name: string;
+  source_name: string;
   event_count: number;
-  first_seen: string;
-  last_seen: string;
-  metadata?: string;
+}
+
+// Raw catalog response — data.items + data.total
+interface RawCatalogData {
+  items: CatalogEntity[];
+  total: number;
 }
 
 export interface CatalogData {
@@ -215,7 +228,8 @@ export async function fetchFeed(params: {
   };
   if (params.vertical) qs.vertical = params.vertical;
   if (params.event_type) qs.event_type = params.event_type;
-  return publicFetch<FeedData>("public/feed", qs);
+  const raw = await publicFetch<RawFeedData>("public/feed", qs);
+  return { events: raw.items ?? [], total: raw.total ?? 0 };
 }
 
 export async function fetchVerticals(): Promise<VerticalsData> {
@@ -234,7 +248,8 @@ export async function fetchVerticalFeed(params: {
     page_size: String(params.page_size ?? 20),
   };
   if (params.event_type) qs.event_type = params.event_type;
-  return publicFetch<FeedData>("public/verticals/feed", qs);
+  const raw = await publicFetch<RawFeedData>("public/verticals/feed", qs);
+  return { events: raw.items ?? [], total: raw.total ?? 0 };
 }
 
 export async function fetchCatalog(params: {
@@ -247,7 +262,8 @@ export async function fetchCatalog(params: {
     page_size: String(params.page_size ?? 20),
   };
   if (params.vertical) qs.vertical = params.vertical;
-  return publicFetch<CatalogData>("public/catalog", qs);
+  const raw = await publicFetch<RawCatalogData>("public/catalog", qs);
+  return { entities: raw.items ?? [], total: raw.total ?? 0 };
 }
 
 export async function fetchPublicMarkets(params: {

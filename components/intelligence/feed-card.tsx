@@ -34,7 +34,7 @@ export function IntelligenceFeedCard({
   })();
 
   return (
-    <Link href={`/intelligence/events/${event.id}`}>
+    <Link href={`/intelligence/events/${event.canonical_event_id}`}>
       <Card className="border-border/50 transition-all hover:border-primary/30 hover:bg-accent/20 cursor-pointer group">
         <CardContent className="pt-4 pb-3 px-4">
           {/* Top row: badges */}
@@ -76,8 +76,8 @@ export function IntelligenceFeedCard({
               <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 Top impacted markets
               </p>
-              {event.top_impacts.slice(0, 3).map((impact) => (
-                <div key={impact.id} className="flex items-center gap-2 text-xs">
+              {event.top_impacts.slice(0, 3).map((impact, idx) => (
+                <div key={impact.market_id ?? idx} className="flex items-center gap-2 text-xs">
                   <ImpactBadge direction={impact.direction} />
                   <span className="truncate text-muted-foreground flex-1">
                     {impact.market_title || `Market #${impact.market_id}`}

@@ -118,9 +118,8 @@ export default function IntelligencePage() {
               <VerticalCard
                 key={v.vertical}
                 vertical={v.vertical}
-                marketCount={v.market_count}
-                eventCount={v.event_count}
-                impactCount={v.impact_count}
+                marketCount={v.markets_count}
+                eventCount={v.events_count}
               />
             ))}
           </div>
@@ -147,7 +146,7 @@ export default function IntelligencePage() {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {feed.map((event) => (
-              <IntelligenceFeedCard key={event.id} event={event} />
+              <IntelligenceFeedCard key={event.canonical_event_id} event={event} />
             ))}
           </div>
         </div>

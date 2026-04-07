@@ -10,7 +10,7 @@ import { VerticalBadge } from "@/components/intelligence/vertical-card";
 import { DelayBadge } from "@/components/intelligence/badges";
 import { SummaryStatCard } from "@/components/intelligence/stat-card";
 import { fetchVerticalFeed, fetchVerticals, type FeedEvent, type VerticalInfo } from "@/lib/intelligence-api";
-import { ArrowLeft, Activity, Target, BarChart3 } from "lucide-react";
+import { ArrowLeft, Activity, Target } from "lucide-react";
 
 export default function VerticalFeedPage() {
   const params = useParams();
@@ -79,10 +79,9 @@ export default function VerticalFeedPage() {
 
       {/* Stats */}
       {info && (
-        <div className="grid grid-cols-3 gap-3">
-          <SummaryStatCard label="Markets" value={info.market_count ?? 0} icon={Target} color="text-sky-400" />
-          <SummaryStatCard label="Events" value={info.event_count ?? 0} icon={Activity} color="text-emerald-400" />
-          <SummaryStatCard label="Impacts" value={info.impact_count ?? 0} icon={BarChart3} color="text-amber-400" />
+        <div className="grid grid-cols-2 gap-3">
+          <SummaryStatCard label="Markets" value={info.markets_count ?? 0} icon={Target} color="text-sky-400" />
+          <SummaryStatCard label="Events" value={info.events_count ?? 0} icon={Activity} color="text-emerald-400" />
         </div>
       )}
 
@@ -120,7 +119,7 @@ export default function VerticalFeedPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {events.map((event) => (
-              <IntelligenceFeedCard key={event.id} event={event} />
+              <IntelligenceFeedCard key={event.canonical_event_id} event={event} />
             ))}
           </div>
           <Pagination

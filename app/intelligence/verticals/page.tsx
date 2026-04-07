@@ -31,8 +31,8 @@ export default function VerticalsPage() {
   if (error) return <PageError message={error} onRetry={loadData} />;
   if (verticals.length === 0) return <PageEmpty title="No verticals" message="No intelligence verticals available." />;
 
-  const totalMarkets = verticals.reduce((s, v) => s + (v.market_count ?? 0), 0);
-  const totalEvents = verticals.reduce((s, v) => s + (v.event_count ?? 0), 0);
+  const totalMarkets = verticals.reduce((s, v) => s + (v.markets_count ?? 0), 0);
+  const totalEvents = verticals.reduce((s, v) => s + (v.events_count ?? 0), 0);
 
   return (
     <div className="space-y-6">
@@ -48,9 +48,8 @@ export default function VerticalsPage() {
           <VerticalCard
             key={v.vertical}
             vertical={v.vertical}
-            marketCount={v.market_count}
-            eventCount={v.event_count}
-            impactCount={v.impact_count}
+            marketCount={v.markets_count}
+            eventCount={v.events_count}
           />
         ))}
       </div>

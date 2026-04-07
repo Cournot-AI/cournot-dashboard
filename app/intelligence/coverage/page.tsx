@@ -14,17 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
 export default function CoveragePage() {
   const [entities, setEntities] = useState<CatalogEntity[]>([]);
   const [total, setTotal] = useState(0);
@@ -113,14 +102,12 @@ export default function CoveragePage() {
                   <TableHead className="text-[11px] font-semibold uppercase tracking-wider">Type</TableHead>
                   <TableHead className="text-[11px] font-semibold uppercase tracking-wider">Vertical</TableHead>
                   <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-right">Events</TableHead>
-                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-right">First Seen</TableHead>
-                  <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-right">Last Seen</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {entities.map((entity) => (
-                  <TableRow key={entity.id} className="text-xs">
-                    <TableCell className="font-medium">{entity.entity}</TableCell>
+                {entities.map((entity, idx) => (
+                  <TableRow key={`${entity.vertical}-${entity.entity_name}-${idx}`} className="text-xs">
+                    <TableCell className="font-medium capitalize">{entity.entity_name}</TableCell>
                     <TableCell>
                       <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground capitalize">
                         {entity.entity_type.replace(/_/g, " ")}
@@ -128,8 +115,6 @@ export default function CoveragePage() {
                     </TableCell>
                     <TableCell><VerticalBadge vertical={entity.vertical} /></TableCell>
                     <TableCell className="text-right font-mono tabular-nums">{entity.event_count}</TableCell>
-                    <TableCell className="text-right text-muted-foreground">{timeAgo(entity.first_seen)}</TableCell>
-                    <TableCell className="text-right text-muted-foreground">{timeAgo(entity.last_seen)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

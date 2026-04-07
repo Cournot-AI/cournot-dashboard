@@ -113,7 +113,7 @@ export default function FeedPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {events.map((event) => (
-              <IntelligenceFeedCard key={event.id} event={event} />
+              <IntelligenceFeedCard key={event.canonical_event_id} event={event} />
             ))}
           </div>
           <Pagination
