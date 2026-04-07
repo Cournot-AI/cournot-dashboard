@@ -414,8 +414,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
     });
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     if (!accessCode || !outcome.trim()) return;
     setLoading(true);
     try {
@@ -667,7 +666,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
               </>
             )}
           </p>
-          <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
+          <div className="space-y-4 max-w-xl">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <OutcomeSelect
@@ -707,7 +706,8 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
 
             <div className="flex flex-wrap items-center gap-3">
               <button
-                type="submit"
+                type="button"
+                onClick={handleSubmit}
                 disabled={loading || !outcome.trim() || rerunNeeded}
                 className={`h-9 rounded-lg px-4 text-sm font-medium text-white transition-colors disabled:opacity-50 inline-flex items-center gap-2 ${mode === "conflict" ? "bg-red-600 hover:bg-red-600/90" : "bg-green-600 hover:bg-green-600/90"}`}
               >
@@ -746,7 +746,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
                 </button>
               )}
             </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
 
