@@ -44,7 +44,7 @@ export interface OverviewVertical {
 
 export interface OverviewData {
   total_markets: number;
-  total_events: number;
+  total_canonical_events: number;
   total_impacts: number;
   total_verticals: number;
   verticals: OverviewVertical[];

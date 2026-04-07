@@ -85,7 +85,7 @@ export default function IntelligencePage() {
           />
           <SummaryStatCard
             label="Canonical Events"
-            value={overview.total_events ?? 0}
+            value={overview.total_canonical_events ?? 0}
             icon={Activity}
             color="text-emerald-400"
           />
