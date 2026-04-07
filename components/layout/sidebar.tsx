@@ -13,7 +13,6 @@ import {
   PlusCircle,
   Zap,
   Rss,
-  Layers,
   Target,
   Lock,
 } from "lucide-react";
@@ -49,7 +48,6 @@ export function Sidebar() {
         { href: "/intelligence", label: "Intelligence", icon: Zap },
         { href: "/intelligence/feed", label: "Feed", icon: Rss },
         { href: "/intelligence/markets", label: "Markets", icon: Target },
-        { href: "/intelligence/coverage", label: "Coverage", icon: Layers },
         { href: "/intelligence/premium", label: "Premium", icon: Lock },
       ],
     },
