@@ -13,7 +13,6 @@ import {
   PlusCircle,
   Zap,
   Rss,
-  Globe,
   Layers,
   Target,
   Lock,
@@ -49,7 +48,6 @@ export function Sidebar() {
       items: [
         { href: "/intelligence", label: "Intelligence", icon: Zap },
         { href: "/intelligence/feed", label: "Feed", icon: Rss },
-        { href: "/intelligence/verticals", label: "Verticals", icon: Globe },
         { href: "/intelligence/markets", label: "Markets", icon: Target },
         { href: "/intelligence/coverage", label: "Coverage", icon: Layers },
         { href: "/intelligence/premium", label: "Premium", icon: Lock },

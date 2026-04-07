@@ -101,17 +101,9 @@ export default function IntelligencePage() {
       {/* Verticals */}
       {verticals.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">Verticals</h2>
-              <p className="text-xs text-muted-foreground">Coverage across {verticals.length} intelligence verticals</p>
-            </div>
-            <Link
-              href="/intelligence/verticals"
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-            >
-              View all <ArrowRight className="h-3 w-3" />
-            </Link>
+          <div>
+            <h2 className="text-lg font-semibold">Verticals</h2>
+            <p className="text-xs text-muted-foreground">Coverage across {verticals.length} intelligence verticals</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {verticals.slice(0, 6).map((v) => (
