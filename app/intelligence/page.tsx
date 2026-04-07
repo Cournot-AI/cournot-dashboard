@@ -2,33 +2,26 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { SummaryStatCard } from "@/components/intelligence/stat-card";
-import { VerticalCard } from "@/components/intelligence/vertical-card";
+import { Card, CardContent } from "@/components/ui/card";
 import { IntelligenceFeedCard } from "@/components/intelligence/feed-card";
 import { PageLoading, PageError } from "@/components/intelligence/loading-error";
 import { DelayBadge } from "@/components/intelligence/badges";
 import {
-  fetchOverview,
   fetchFeed,
-  fetchVerticals,
-  type OverviewData,
   type FeedEvent,
-  type VerticalInfo,
 } from "@/lib/intelligence-api";
 import {
-  Globe,
-  Activity,
   Layers,
   Zap,
   ArrowRight,
-  Target,
+  Globe,
+  Activity,
   BarChart3,
+  Radio,
 } from "lucide-react";
 
 export default function IntelligencePage() {
-  const [overview, setOverview] = useState<OverviewData | null>(null);
   const [feed, setFeed] = useState<FeedEvent[]>([]);
-  const [verticals, setVerticals] = useState<VerticalInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,14 +29,8 @@ export default function IntelligencePage() {
     setIsLoading(true);
     setError(null);
     try {
-      const [ov, fd, vt] = await Promise.all([
-        fetchOverview(),
-        fetchFeed({ page_num: 1, page_size: 6 }),
-        fetchVerticals(),
-      ]);
-      setOverview(ov);
+      const fd = await fetchFeed({ page_num: 1, page_size: 6 });
       setFeed(fd.events ?? []);
-      setVerticals(vt.verticals ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load intelligence data");
     } finally {
@@ -68,55 +55,37 @@ export default function IntelligencePage() {
         </p>
       </div>
 
-      {/* Summary stats */}
-      {overview && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <SummaryStatCard
-            label="Verticals"
-            value={overview.total_verticals ?? 0}
-            icon={Globe}
-            color="text-violet-400"
-          />
-          <SummaryStatCard
-            label="Markets Tracked"
-            value={overview.total_markets ?? 0}
-            icon={Target}
-            color="text-sky-400"
-          />
-          <SummaryStatCard
-            label="Canonical Events"
-            value={overview.total_canonical_events ?? 0}
-            icon={Activity}
-            color="text-emerald-400"
-          />
-          <SummaryStatCard
-            label="Market Impacts"
-            value={overview.total_impacts ?? 0}
-            icon={BarChart3}
-            color="text-amber-400"
-          />
-        </div>
-      )}
-
-      {/* Verticals */}
-      {verticals.length > 0 && (
-        <div className="space-y-3">
-          <div>
-            <h2 className="text-lg font-semibold">Verticals</h2>
-            <p className="text-xs text-muted-foreground">Coverage across {verticals.length} intelligence verticals</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {verticals.slice(0, 6).map((v) => (
-              <VerticalCard
-                key={v.vertical}
-                vertical={v.vertical}
-                marketCount={v.markets_count}
-                eventCount={v.events_count}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Capability cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card className="border-border/50">
+          <CardContent className="pt-4 pb-3 px-4">
+            <Globe className="h-5 w-5 text-violet-400 mb-2" />
+            <h3 className="text-sm font-semibold">Multi-Vertical</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Geopolitics, sports, crypto, finance, weather, and more</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border/50">
+          <CardContent className="pt-4 pb-3 px-4">
+            <Activity className="h-5 w-5 text-emerald-400 mb-2" />
+            <h3 className="text-sm font-semibold">Event Detection</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Canonical events extracted and deduplicated from live sources</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border/50">
+          <CardContent className="pt-4 pb-3 px-4">
+            <BarChart3 className="h-5 w-5 text-sky-400 mb-2" />
+            <h3 className="text-sm font-semibold">Impact Analysis</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Events mapped to affected markets with direction and confidence</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border/50">
+          <CardContent className="pt-4 pb-3 px-4">
+            <Radio className="h-5 w-5 text-amber-400 mb-2" />
+            <h3 className="text-sm font-semibold">Continuous Monitoring</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Sources checked continuously with entity extraction and evidence tracking</p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Latest intelligence feed */}
       {feed.length > 0 && (

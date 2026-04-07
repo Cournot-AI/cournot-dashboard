@@ -55,7 +55,7 @@ export default function CoveragePage() {
       <div>
         <h1 className="text-xl font-bold tracking-tight">Coverage</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Entities and sources monitored across our intelligence verticals. {total > 0 && `${total.toLocaleString()} entities tracked.`}
+          Entities and sources monitored across our intelligence verticals.
         </p>
       </div>
 

@@ -33,8 +33,25 @@ export function IntelligenceFeedCard({
     }
   })();
 
+  // Pass core event data as a URL param so the detail page can render
+  // without needing an API call (the canonical_events/id endpoint may
+  // not carry delayed-feed events).
+  const eventPayload = encodeURIComponent(JSON.stringify({
+    canonical_event_id: event.canonical_event_id,
+    vertical: event.vertical,
+    event_type: event.event_type,
+    title: event.title,
+    summary: event.summary,
+    entities: event.entities,
+    first_seen: event.first_seen,
+    last_updated: event.last_updated,
+    event_time: event.event_time,
+    is_active: event.is_active,
+    evidence_count: event.evidence_count,
+  }));
+
   return (
-    <Link href={`/intelligence/events/${event.canonical_event_id}`}>
+    <Link href={`/intelligence/events/${event.canonical_event_id}?d=${eventPayload}`}>
       <Card className="border-border/50 transition-all hover:border-primary/30 hover:bg-accent/20 cursor-pointer group">
         <CardContent className="pt-4 pb-3 px-4">
           {/* Top row: badges */}

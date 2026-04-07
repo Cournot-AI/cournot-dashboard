@@ -120,7 +120,7 @@ export default function MarketsPage() {
       <div>
         <h1 className="text-xl font-bold tracking-tight">Markets</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Prediction markets tracked by our intelligence layer. {total > 0 && `${total.toLocaleString()} markets.`}
+          Prediction markets tracked by our intelligence layer.
         </p>
       </div>
 

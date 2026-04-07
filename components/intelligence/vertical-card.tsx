@@ -33,26 +33,18 @@ export function VerticalBadge({ vertical }: { vertical: string }) {
 
 export function VerticalCard({
   vertical,
-  marketCount = 0,
-  eventCount = 0,
-  impactCount,
+  displayName,
 }: {
   vertical: string;
-  marketCount?: number;
-  eventCount?: number;
-  impactCount?: number;
+  displayName?: string;
 }) {
   return (
     <Card className="border-border/50">
       <CardContent className="pt-4 pb-3 px-4">
         <VerticalBadge vertical={vertical} />
-        <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-          <span><span className="font-semibold text-foreground">{(marketCount ?? 0).toLocaleString()}</span> markets</span>
-          <span><span className="font-semibold text-foreground">{(eventCount ?? 0).toLocaleString()}</span> events</span>
-          {impactCount != null && (
-            <span><span className="font-semibold text-foreground">{impactCount.toLocaleString()}</span> impacts</span>
-          )}
-        </div>
+        {displayName && (
+          <p className="mt-2 text-sm font-medium">{displayName}</p>
+        )}
       </CardContent>
     </Card>
   );
