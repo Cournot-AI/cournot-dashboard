@@ -58,8 +58,6 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
   const reasoning = result?.artifacts?.reasoning_trace;
   const bundles = result?.artifacts?.evidence_bundles ?? [];
   const porBundle = result?.artifacts?.por_bundle;
-  const llmReview = verdict?.metadata?.llm_review;
-
   const validation = prompt?.validation;
   const classification = prompt?.classification;
   const resolvability = prompt?.resolvability;
@@ -103,28 +101,6 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
               </p>
             </div>
           </div>
-
-          {/* LLM Review */}
-          {llmReview && (
-            <div className="mt-4 rounded-lg bg-muted/30 p-4">
-              <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
-                <Brain className="h-3 w-3" /> LLM Review
-                {llmReview.reasoning_valid && (
-                  <Badge variant="outline" className="text-[10px] ml-2 bg-green-500/10 text-green-400">Valid</Badge>
-                )}
-              </p>
-              <p className="text-sm text-muted-foreground">{llmReview.final_justification}</p>
-              {llmReview.confidence_adjustments?.length > 0 && (
-                <div className="mt-2 flex gap-2">
-                  {llmReview.confidence_adjustments.map((adj: any, i: number) => (
-                    <Badge key={i} variant="outline" className="text-[10px]">
-                      {adj.delta > 0 ? "+" : ""}{adj.delta} {adj.reason}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Justification */}
           {verdict?.metadata?.justification && (
