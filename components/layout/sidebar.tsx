@@ -33,7 +33,7 @@ export function Sidebar() {
     {
       label: "Main",
       items: [
-        { href: "/", label: "Overview", icon: LayoutDashboard },
+        { href: "/", label: "Markets", icon: LayoutDashboard },
       ],
     },
     {

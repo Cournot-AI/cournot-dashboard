@@ -11,10 +11,11 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
-type SortField = "created_time" | "end_time" | "start_time" | "updated_time";
+type SortField = "created_time" | "end_time" | "start_time" | "expected_resolve_time" | "updated_time";
 
 const SORT_OPTIONS: { label: string; value: SortField }[] = [
   { label: "Recently Updated", value: "updated_time" },
+  { label: "Expected Resolve", value: "expected_resolve_time" },
   { label: "Newest", value: "created_time" },
   { label: "End Time", value: "end_time" },
   { label: "Start Time", value: "start_time" },
@@ -45,14 +46,15 @@ function formatDate(iso: string) {
   });
 }
 
-export function MarketList() {
+export function MarketList({ status }: { status: "resolved" | "monitoring" }) {
   const router = useRouter();
   const [markets, setMarkets] = useState<AdminMarket[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState<SortField>("updated_time");
-  const order = "desc" as const;
+  const defaultSort: SortField = status === "monitoring" ? "expected_resolve_time" : "updated_time";
+  const [sort, setSort] = useState<SortField>(defaultSort);
+  const order = status === "monitoring" ? "asc" as const : "desc" as const;
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [marketTypeFilter, setMarketTypeFilter] = useState<MarketTypeFilter>("all");
   const pageSize = 20;
@@ -65,7 +67,7 @@ export function MarketList() {
         page_size: pageSize,
         sort,
         order,
-        status: "resolved",
+        status,
         source: sourceFilter === "all" ? undefined : sourceFilter,
         market_timing_type: marketTypeFilter === "all" ? undefined : marketTypeFilter,
       });
@@ -76,7 +78,7 @@ export function MarketList() {
     } finally {
       setLoading(false);
     }
-  }, [sort, order, page, sourceFilter, marketTypeFilter]);
+  }, [status, sort, order, page, sourceFilter, marketTypeFilter]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -156,7 +158,11 @@ export function MarketList() {
                 <TableHead>Title</TableHead>
                 <TableHead>Source</TableHead>
                 <TableHead>AI Outcome</TableHead>
-                <TableHead>Updated</TableHead>
+                {status === "monitoring" ? (
+                  <TableHead>Expected Resolve</TableHead>
+                ) : (
+                  <TableHead>Updated</TableHead>
+                )}
                 <TableHead>End Time</TableHead>
               </TableRow>
             </TableHeader>
@@ -197,7 +203,7 @@ export function MarketList() {
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
-                      {formatDate(m.updated_time)}
+                      {formatDate(status === "monitoring" ? m.expected_resolve_time : m.updated_time)}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {formatDate(m.end_time)}
