@@ -4,9 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  FileText,
-  Radar,
-  FlaskConical,
   Code2,
   ChevronLeft,
   Shield,
@@ -37,9 +34,6 @@ export function Sidebar() {
       label: "Main",
       items: [
         { href: "/", label: "Overview", icon: LayoutDashboard },
-        { href: "/cases", label: "Cases", icon: FileText },
-        { href: "/monitoring", label: "Monitoring", icon: Radar },
-        { href: "/playground", label: "Playground", icon: FlaskConical },
       ],
     },
     {

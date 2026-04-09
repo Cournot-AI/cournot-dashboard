@@ -86,6 +86,31 @@ export async function checkIsAdmin(code: string): Promise<boolean> {
   return json.is_admin;
 }
 
+export async function fetchMarketsPublic(
+  params: {
+    page_num?: number;
+    page_size?: number;
+    sort?: string;
+    order?: "asc" | "desc";
+    status?: AdminMarketStatus;
+    source?: string;
+    market_timing_type?: string;
+  } = {}
+): Promise<ListMarketsResponse> {
+  const qs = new URLSearchParams();
+  qs.set("page_num", String(params.page_num ?? 1));
+  qs.set("page_size", String(params.page_size ?? 20));
+  if (params.sort) qs.set("sort", params.sort);
+  if (params.order) qs.set("order", params.order);
+  if (params.status) qs.set("status", params.status);
+  if (params.source) qs.set("source", params.source);
+  if (params.market_timing_type) qs.set("market_timing_type", params.market_timing_type);
+  const data = await adminFetch<ListMarketsResponse>(
+    `${API_BASE}/markets/list?${qs.toString()}`
+  );
+  return { markets: data.markets ?? [], total: data.total ?? 0 };
+}
+
 export async function fetchMarkets(
   code: string,
   params: {
