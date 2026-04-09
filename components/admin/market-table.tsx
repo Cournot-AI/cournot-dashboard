@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useRole } from "@/lib/role";
 import { fetchMarkets } from "@/lib/admin-api";
 import type { AdminMarket, AdminMarketStatus } from "@/lib/types";
@@ -87,19 +86,53 @@ function statusBadge(market: AdminMarket) {
   }
 }
 
+const VALID_HASHES = new Set<StatusFilter>(["conflict", "pending_verification", "monitoring", "resolved", "closed", "all"]);
+
+function getStatusFromHash(): StatusFilter {
+  if (typeof window === "undefined") return "conflict";
+  const hash = window.location.hash.replace("#", "");
+  return VALID_HASHES.has(hash as StatusFilter) ? (hash as StatusFilter) : "conflict";
+}
+
 export function MarketTable() {
   const { accessCode } = useRole();
-  const router = useRouter();
   const [markets, setMarkets] = useState<AdminMarket[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<SortField>("expected_resolve_time");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("conflict");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(getStatusFromHash);
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [marketTypeFilter, setMarketTypeFilter] = useState<MarketTypeFilter>("all");
   const pageSize = 20;
+
+  // Sync sort/order defaults on initial mount based on hash-derived status
+  useEffect(() => {
+    const initial = getStatusFromHash();
+    if (initial === "resolved" || initial === "closed") {
+      setSort("updated_time");
+      setOrder("desc");
+    }
+  }, []);
+
+  // Listen for hashchange (browser back/forward)
+  useEffect(() => {
+    function onHashChange() {
+      const status = getStatusFromHash();
+      setStatusFilter(status);
+      setPage(1);
+      if (status === "resolved" || status === "closed") {
+        setSort("updated_time");
+        setOrder("desc");
+      } else {
+        setSort("expected_resolve_time");
+        setOrder("asc");
+      }
+    }
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
 
   const load = useCallback(async () => {
     if (!accessCode) return;
@@ -135,6 +168,7 @@ export function MarketTable() {
           <button
             key={tab.value}
             onClick={() => {
+              window.location.hash = tab.value;
               setStatusFilter(tab.value);
               setPage(1);
               if (tab.value === "resolved" || tab.value === "closed") {
@@ -259,7 +293,7 @@ export function MarketTable() {
                       m.status === "pending_verification" && "bg-amber-500/5",
                       m.status === "conflict" && "bg-red-500/5"
                     )}
-                    onClick={() => router.push(`/admin/markets/${m.id}`)}
+                    onClick={() => window.open(`/admin/markets/${m.id}`, "_blank")}
                   >
                     <TableCell className="text-muted-foreground text-xs font-mono">
                       {m.id}
@@ -298,7 +332,7 @@ export function MarketTable() {
                     </TableCell>
                     <TableCell className="text-right">
                       <button
-                        onClick={(e) => { e.stopPropagation(); router.push(`/admin/markets/${m.id}`); }}
+                        onClick={(e) => { e.stopPropagation(); window.open(`/admin/markets/${m.id}`, "_blank"); }}
                         className="text-xs text-primary hover:underline"
                       >
                         View

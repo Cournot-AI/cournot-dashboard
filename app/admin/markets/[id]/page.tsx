@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Settings, Clock, XCircle } from "lucide-react";
+import { Loader2, Settings, Clock, XCircle, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -244,6 +244,38 @@ export default function MarketDetailPage() {
         Admin &rarr; Market Monitor &rarr; <span className="text-foreground">{market.title}</span>
       </div>
 
+      {/* Scroll-into-view buttons */}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => document.getElementById("description")?.scrollIntoView({ behavior: "smooth" })}
+          className="h-7 rounded-md border border-border px-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors inline-flex items-center gap-1"
+        >
+          <ArrowDown className="h-3 w-3" />
+          Description
+        </button>
+        {(market.status === "monitoring" || market.status === "pending_verification" || market.status === "conflict") && (
+          <button
+            type="button"
+            onClick={() => document.getElementById("submit-review")?.scrollIntoView({ behavior: "smooth" })}
+            className="h-7 rounded-md border border-border px-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors inline-flex items-center gap-1"
+          >
+            <ArrowDown className="h-3 w-3" />
+            Submit Review
+          </button>
+        )}
+        {market.status === "resolved" && market.ai_result && (
+          <button
+            type="button"
+            onClick={() => document.getElementById("disputes")?.scrollIntoView({ behavior: "smooth" })}
+            className="h-7 rounded-md border border-border px-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors inline-flex items-center gap-1"
+          >
+            <ArrowDown className="h-3 w-3" />
+            Disputes
+          </button>
+        )}
+      </div>
+
       {/* Review Status Indicator */}
       {market.status !== "resolved" && market.status !== "closed" && (
         <Card>
@@ -275,6 +307,7 @@ export default function MarketDetailPage() {
         </Card>
       )}
 
+      <div id="description">
       <MarketDetail
         market={market}
         classification={classification}
@@ -300,6 +333,7 @@ export default function MarketDetailPage() {
           </button>
         }
       />
+      </div>
 
       {/* External Data */}
       {externalData.length > 0 && (
@@ -322,6 +356,7 @@ export default function MarketDetailPage() {
 
       {/* Disputes — shown for resolved markets */}
       {market.status === "resolved" && market.ai_result && (
+        <div id="disputes">
         <MarketDisputes
           marketId={market.id}
           currentAiResult={market.ai_result}
@@ -331,10 +366,12 @@ export default function MarketDetailPage() {
           accessCode={accessCode}
           onMarketUpdated={load}
         />
+        </div>
       )}
 
       {/* Action panel — shown for monitoring, pending_verification, and conflict */}
       {(market.status === "monitoring" || market.status === "pending_verification" || market.status === "conflict") && (
+        <div id="submit-review">
         <PorTrigger
           question={market.title}
           aiPrompt={effectiveAiPrompt || market.ai_prompt || undefined}
@@ -344,6 +381,7 @@ export default function MarketDetailPage() {
           onAiPrompt={setEffectiveAiPrompt}
           resolveContent={resolveForm}
         />
+        </div>
       )}
 
       {/* Closed: read-only terminal state */}
