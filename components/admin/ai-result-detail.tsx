@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   ExternalLink, ShieldCheck, AlertTriangle, Hash, Clock,
-  ChevronRight, FileText, Brain, Search,
+  ChevronRight, FileText, Brain, Search, Sparkles,
 } from "lucide-react";
 
 function formatDate(iso: string) {
@@ -63,58 +63,113 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
   const resolvability = prompt?.resolvability;
   const promptSpec = prompt?.prompt_spec;
 
+  const committee = result.ai_committee_result;
+  const hasCommittee = !!(committee && committee.ai_committee_reasoning);
+
   return (
     <div className="space-y-4">
-      {/* ── Verdict Overview ── */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-            <h3 className="text-sm font-semibold">AI Verdict</h3>
-          </div>
+      {/* ── Verdict / Committee ── */}
+      {hasCommittee ? (
+        <Card className="border-violet-500/30 bg-violet-500/5">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="h-5 w-5 text-violet-400" />
+              <h3 className="text-sm font-semibold text-violet-400">AI Committee Review</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              This market was verified by an AI committee using additional models for higher accuracy.
+            </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="text-xs text-muted-foreground">Outcome</span>
-              <p className={cn("text-2xl font-bold", {
-                "text-green-400": result.outcome === "YES",
-                "text-red-400": result.outcome === "NO",
-                "text-yellow-400": result.outcome === "INVALID",
-              })}>
-                {result.outcome}
-              </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="text-xs text-muted-foreground">Outcome</span>
+                <p className={cn("text-2xl font-bold", {
+                  "text-green-400": committee.ai_committee_outcome === "YES",
+                  "text-red-400": committee.ai_committee_outcome === "NO",
+                  "text-yellow-400": committee.ai_committee_outcome === "INVALID",
+                })}>
+                  {committee.ai_committee_outcome}
+                </p>
+              </div>
+              {committee.ai_committee_confidence != null && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Confidence</span>
+                  <p className={cn("text-2xl font-bold", confidenceColor(committee.ai_committee_confidence))}>
+                    {(committee.ai_committee_confidence * 100).toFixed(0)}%
+                  </p>
+                </div>
+              )}
+              <div>
+                <span className="text-xs text-muted-foreground">Market ID</span>
+                <p className="font-mono text-xs mt-1">{result.market_id}</p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">PoR Root</span>
+                <p className="font-mono text-xs mt-1 truncate" title={result.por_root}>
+                  {result.por_root}
+                </p>
+              </div>
             </div>
-            <div>
-              <span className="text-xs text-muted-foreground">Confidence</span>
-              <p className={cn("text-2xl font-bold", confidenceColor(result.confidence))}>
-                {(result.confidence * 100).toFixed(0)}%
-              </p>
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground">Market ID</span>
-              <p className="font-mono text-xs mt-1">{result.market_id}</p>
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground">PoR Root</span>
-              <p className="font-mono text-xs mt-1 truncate" title={result.por_root}>
-                {result.por_root}
-              </p>
-            </div>
-          </div>
 
-          {/* Justification */}
-          {verdict?.metadata?.justification && (
-            <details open className="mt-4">
-              <summary className="text-xs text-primary cursor-pointer flex items-center gap-1">
-                <FileText className="h-3 w-3" /> Full Justification
-              </summary>
-              <pre className="mt-2 text-xs text-muted-foreground whitespace-pre-wrap bg-muted/20 rounded-lg p-3 max-h-[400px] overflow-y-auto">
-                {verdict.metadata.justification}
-              </pre>
-            </details>
-          )}
-        </CardContent>
-      </Card>
+            <div className="mt-4">
+              <span className="text-xs font-medium text-muted-foreground">Reasoning</span>
+              <p className="text-sm text-muted-foreground/90 mt-1 leading-relaxed whitespace-pre-wrap">
+                {committee.ai_committee_reasoning}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              <h3 className="text-sm font-semibold">AI Verdict</h3>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="text-xs text-muted-foreground">Outcome</span>
+                <p className={cn("text-2xl font-bold", {
+                  "text-green-400": result.outcome === "YES",
+                  "text-red-400": result.outcome === "NO",
+                  "text-yellow-400": result.outcome === "INVALID",
+                })}>
+                  {result.outcome}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">Confidence</span>
+                <p className={cn("text-2xl font-bold", confidenceColor(result.confidence))}>
+                  {(result.confidence * 100).toFixed(0)}%
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">Market ID</span>
+                <p className="font-mono text-xs mt-1">{result.market_id}</p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground">PoR Root</span>
+                <p className="font-mono text-xs mt-1 truncate" title={result.por_root}>
+                  {result.por_root}
+                </p>
+              </div>
+            </div>
+
+            {/* Justification */}
+            {verdict?.metadata?.justification && (
+              <details open className="mt-4">
+                <summary className="text-xs text-primary cursor-pointer flex items-center gap-1">
+                  <FileText className="h-3 w-3" /> Full Justification
+                </summary>
+                <pre className="mt-2 text-xs text-muted-foreground whitespace-pre-wrap bg-muted/20 rounded-lg p-3 max-h-[400px] overflow-y-auto">
+                  {verdict.metadata.justification}
+                </pre>
+              </details>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── Human Resolve Reasoning ── */}
       {resolveReasoning && (
