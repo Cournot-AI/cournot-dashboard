@@ -207,6 +207,9 @@ export async function updateMarket(
     expected_resolve_time?: string;
     market_timing_type?: string;
     silence_deadline?: string;
+    ai_committee_outcome?: string;
+    ai_committee_confidence?: number;
+    ai_committee_reasoning?: string;
   }
 ): Promise<{ market: AdminMarket }> {
   return adminFetch<{ market: AdminMarket }>(`${API_BASE}/markets/update`, {
@@ -221,12 +224,22 @@ export async function updateMarket(
 export async function submitReview(
   code: string,
   marketId: number,
-  aiResult: string
+  aiResult: string,
+  committee?: {
+    ai_committee_outcome?: string;
+    ai_committee_confidence?: number;
+    ai_committee_reasoning?: string;
+  }
 ): Promise<{ review: MarketReview }> {
   return adminFetch<{ review: MarketReview }>(`${API_BASE}/markets/submit_review`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code, market_id: marketId, ai_result: aiResult }),
+    body: JSON.stringify({
+      code,
+      market_id: marketId,
+      ai_result: aiResult,
+      ...committee,
+    }),
   });
 }
 

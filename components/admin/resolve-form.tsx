@@ -370,6 +370,15 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawAiResult]);
 
+  /** Build committee fields from the current form state. */
+  function buildCommitteeFields() {
+    return {
+      ai_committee_outcome: outcome.trim() || undefined,
+      ai_committee_confidence: parseFloat(confidence) || undefined,
+      ai_committee_reasoning: reasoning.trim() || undefined,
+    };
+  }
+
   /** Build the ai_result string to send to backend. */
   function buildAiResult(): string {
     const adminOutcome = outcome.trim();
@@ -418,13 +427,15 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
     if (!accessCode || !outcome.trim()) return;
     setLoading(true);
     try {
+      const committee = buildCommitteeFields();
       if (mode === "review") {
-        await submitReview(accessCode, marketId, buildAiResult());
+        await submitReview(accessCode, marketId, buildAiResult(), committee);
         toast.success("Review submitted");
       } else {
         await updateMarket(accessCode, marketId, {
           status: "resolved",
           ai_result: buildAiResult(),
+          ...committee,
         });
         toast.success("Conflict resolved");
       }
@@ -624,13 +635,24 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
 
     setAdvancedLoading(true);
     try {
+      // Derive committee fields from the final JSON
+      const parsedFinal = JSON.parse(finalJson);
+      const advCommittee = {
+        ai_committee_outcome: (parsedFinal.outcome as string) || undefined,
+        ai_committee_confidence: (parsedFinal.confidence as number) || undefined,
+        ai_committee_reasoning:
+          (parsedFinal.artifacts?.reasoning_trace?.reasoning_summary as string) ??
+          (parsedFinal.artifacts?.verdict?.metadata?.justification as string) ??
+          undefined,
+      };
       if (mode === "review") {
-        await submitReview(accessCode, marketId, finalJson);
+        await submitReview(accessCode, marketId, finalJson, advCommittee);
         toast.success("Review submitted with manual edits");
       } else {
         await updateMarket(accessCode, marketId, {
           status: "resolved",
           ai_result: finalJson,
+          ...advCommittee,
         });
         toast.success("Conflict resolved with manual edits");
       }
