@@ -74,11 +74,8 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-1">
               <Sparkles className="h-5 w-5 text-violet-400" />
-              <h3 className="text-sm font-semibold text-violet-400">AI Committee Review</h3>
+              <h3 className="text-sm font-semibold text-violet-400">Advanced AI Verdict</h3>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">
-              This market was verified by an AI committee using additional models for higher accuracy.
-            </p>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
