@@ -65,6 +65,7 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
 
   const committee = result.ai_committee_result;
   const hasCommittee = !!(committee && committee.ai_committee_reasoning);
+  const committeeEvidences: { url: string; reasoning: string }[] = committee?.ai_committee_evidences ?? [];
 
   return (
     <div className="space-y-4">
@@ -114,6 +115,7 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
                 {committee.ai_committee_reasoning}
               </p>
             </div>
+
           </CardContent>
         </Card>
       ) : (
@@ -182,17 +184,92 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
       )}
 
       {/* ── Evidence Bundles ── */}
-      {bundles.length > 0 && (
+      {(bundles.length > 0 || committeeEvidences.length > 0) && (
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <Search className="h-5 w-5 text-primary" />
               <h3 className="text-sm font-semibold">
-                Evidence ({bundles.reduce((n: number, b: any) => n + (b.items?.length ?? 0), 0)} items across {bundles.length} bundle{bundles.length > 1 ? "s" : ""})
+                Evidence ({bundles.reduce((n: number, b: any) => n + (b.items?.length ?? 0), 0) + committeeEvidences.length} items across {bundles.length + (committeeEvidences.length > 0 ? 1 : 0)} bundle{bundles.length + (committeeEvidences.length > 0 ? 1 : 0) > 1 ? "s" : ""})
               </h3>
             </div>
 
             <div className="space-y-6">
+              {/* Committee Evidence as first "bundle" — same format as regular bundles */}
+              {committeeEvidences.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px]">RuntimeAgent</Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {committeeEvidences.length} items
+                    </span>
+                  </div>
+
+                  {committeeEvidences.map((ev: { url: string; reasoning: string }, ei: number) => {
+                    const domain = (() => { try { return new URL(ev.url).hostname; } catch { return ev.url; } })();
+                    return (
+                      <div key={ei} className="rounded-lg border border-border bg-muted/10 p-4 space-y-3">
+                        {/* Item header */}
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="outline" className={cn("text-[10px]", {
+                                "bg-green-500/10 text-green-400": committee.ai_committee_outcome === "YES" || committee.ai_committee_outcome === "Yes",
+                                "bg-red-500/10 text-red-400": committee.ai_committee_outcome === "NO" || committee.ai_committee_outcome === "No",
+                                "bg-yellow-500/10 text-yellow-500": committee.ai_committee_outcome === "INVALID",
+                              })}>
+                                {committee.ai_committee_outcome ?? "Unknown"}
+                              </Badge>
+                              <span className={cn("text-xs font-medium", confidenceColor(0.95))}>
+                                95% confidence
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Source — same format as regular evidence sources */}
+                        {ev.url && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-muted-foreground">
+                              Sources (1)
+                            </p>
+                            <div className="rounded-md border border-border/50 bg-background/50 p-3 text-xs">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                  <Badge variant="outline" className={cn("text-[10px] shrink-0", tierColor(1))}>
+                                    {tierLabel(1)}
+                                  </Badge>
+                                  <span className="font-medium truncate">{domain}</span>
+                                  <Badge variant="outline" className={cn("text-[10px] shrink-0", {
+                                    "bg-green-500/10 text-green-400": committee.ai_committee_outcome === "YES",
+                                    "bg-red-500/10 text-red-400": committee.ai_committee_outcome === "NO",
+                                  })}>
+                                    {committee.ai_committee_outcome === "YES" || committee.ai_committee_outcome === "NO" ? committee.ai_committee_outcome : "N/A"}
+                                  </Badge>
+                                </div>
+                                <a
+                                  href={ev.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline shrink-0"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              </div>
+                              {ev.reasoning && (
+                                <p className="text-muted-foreground mt-2 leading-relaxed">
+                                  {ev.reasoning}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {bundles.map((bundle: any, bi: number) => (
                 <div key={bi} className="space-y-3">
                   <div className="flex items-center gap-2">

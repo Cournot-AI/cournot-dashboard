@@ -210,6 +210,7 @@ export async function updateMarket(
     ai_committee_outcome?: string;
     ai_committee_confidence?: number;
     ai_committee_reasoning?: string;
+    ai_committee_evidences?: { url: string; reasoning: string }[];
   }
 ): Promise<{ market: AdminMarket }> {
   return adminFetch<{ market: AdminMarket }>(`${API_BASE}/markets/update`, {
@@ -229,6 +230,7 @@ export async function submitReview(
     ai_committee_outcome?: string;
     ai_committee_confidence?: number;
     ai_committee_reasoning?: string;
+    ai_committee_evidences?: { url: string; reasoning: string }[];
   }
 ): Promise<{ review: MarketReview }> {
   return adminFetch<{ review: MarketReview }>(`${API_BASE}/markets/submit_review`, {

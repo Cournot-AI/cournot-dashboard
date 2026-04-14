@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, ArrowLeft, Pencil, ChevronDown, Plus, Trash2, Clock, XCircle } from "lucide-react";
+import { Loader2, CheckCircle, ArrowLeft, Pencil, ChevronDown, Plus, Trash2, Clock, XCircle, Link } from "lucide-react";
 
 // ── Summarized Fields types ──
 
@@ -347,6 +347,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
   const [reasoning, setReasoning] = useState(
     porResult?.reasoning_summary ?? initial.reasoning
   );
+  const [committeeEvidences, setCommitteeEvidences] = useState<{ url: string; reasoning: string }[]>([]);
 
   // Update when PoR result arrives (re-run or dispute)
   useEffect(() => {
@@ -372,10 +373,12 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
 
   /** Build committee fields from the current form state. */
   function buildCommitteeFields() {
+    const evidences = committeeEvidences.filter(e => e.url.trim() || e.reasoning.trim());
     return {
       ai_committee_outcome: outcome.trim() || undefined,
       ai_committee_confidence: parseFloat(confidence) || undefined,
       ai_committee_reasoning: reasoning.trim() || undefined,
+      ai_committee_evidences: evidences.length > 0 ? evidences : undefined,
     };
   }
 
@@ -637,6 +640,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
     try {
       // Derive committee fields from the final JSON
       const parsedFinal = JSON.parse(finalJson);
+      const filteredEvidences = committeeEvidences.filter(e => e.url.trim() || e.reasoning.trim());
       const advCommittee = {
         ai_committee_outcome: (parsedFinal.outcome as string) || undefined,
         ai_committee_confidence: (parsedFinal.confidence as number) || undefined,
@@ -644,6 +648,7 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
           (parsedFinal.artifacts?.reasoning_trace?.reasoning_summary as string) ??
           (parsedFinal.artifacts?.verdict?.metadata?.justification as string) ??
           undefined,
+        ai_committee_evidences: filteredEvidences.length > 0 ? filteredEvidences : undefined,
       };
       if (mode === "review") {
         await submitReview(accessCode, marketId, finalJson, advCommittee);
@@ -718,6 +723,54 @@ export function ResolveForm({ marketId, porResult, rawAiResult, aiPrompt, mode =
                 placeholder="Reasoning for this outcome..."
                 rows={3}
               />
+            </div>
+
+            {/* Committee Evidence */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Link className="h-3 w-3" />
+                  Evidence Sources
+                </label>
+                {committeeEvidences.length > 0 && (
+                  <span className="text-[10px] text-muted-foreground">{committeeEvidences.length} item{committeeEvidences.length > 1 ? "s" : ""}</span>
+                )}
+              </div>
+              {committeeEvidences.map((ev, i) => (
+                <div key={i} className="rounded-lg border border-border p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Evidence #{i + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => setCommitteeEvidences(prev => prev.filter((_, idx) => idx !== i))}
+                      className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <Input
+                    value={ev.url}
+                    onChange={(e) => setCommitteeEvidences(prev => prev.map((item, idx) => idx === i ? { ...item, url: e.target.value } : item))}
+                    placeholder="https://..."
+                    className="text-xs"
+                  />
+                  <Textarea
+                    value={ev.reasoning}
+                    onChange={(e) => setCommitteeEvidences(prev => prev.map((item, idx) => idx === i ? { ...item, reasoning: e.target.value } : item))}
+                    placeholder="Why this source supports the outcome..."
+                    rows={2}
+                    className="text-xs"
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setCommitteeEvidences(prev => [...prev, { url: "", reasoning: "" }])}
+                className="h-8 rounded-lg border border-dashed border-border px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:border-foreground/30 inline-flex items-center gap-1.5"
+              >
+                <Plus className="h-3 w-3" />
+                Add Evidence
+              </button>
             </div>
 
             {rerunNeeded && (
