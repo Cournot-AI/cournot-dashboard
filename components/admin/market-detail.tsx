@@ -247,10 +247,12 @@ function ImpactItem({ impact }: { impact: MarketImpact }) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Badge variant="outline" className="text-[10px] shrink-0">{impact.impact_type}</Badge>
-          <span className={cn("inline-flex items-center gap-0.5 text-sm font-medium", deltaColor)}>
-            {isUp ? <ArrowUp className="h-3.5 w-3.5" /> : isDown ? <ArrowDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-            {(impact.probability_delta >= 0 ? "+" : "")}{(impact.probability_delta * 100).toFixed(1)}%
-          </span>
+          {Math.abs(impact.probability_delta * 100) >= 0.05 && (
+            <span className={cn("inline-flex items-center gap-0.5 text-sm font-medium", deltaColor)}>
+              {isUp ? <ArrowUp className="h-3.5 w-3.5" /> : isDown ? <ArrowDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+              {(impact.probability_delta >= 0 ? "+" : "")}{(impact.probability_delta * 100).toFixed(1)}%
+            </span>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Badge

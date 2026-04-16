@@ -297,7 +297,7 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
                               })}>
                                 {ef.outcome ?? ef.resolution_status ?? "Unknown"}
                               </Badge>
-                              {ef.confidence_score != null && (
+                              {ef.confidence_score != null && ef.confidence_score >= 0.5 && (
                                 <span className={cn("text-xs font-medium", confidenceColor(ef.confidence_score))}>
                                   {(ef.confidence_score * 100).toFixed(0)}% confidence
                                 </span>
@@ -398,7 +398,7 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
             <div className="flex items-center gap-2 mb-4">
               <Brain className="h-5 w-5 text-primary" />
               <h3 className="text-sm font-semibold">
-                Reasoning Trace ({reasoning.steps.length} steps)
+                Reasoning Trace ({reasoning.steps.length + (hasCommittee ? 1 : 0)} steps)
               </h3>
             </div>
 
@@ -443,6 +443,28 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
                   </div>
                 </details>
               ))}
+
+              {/* Escalated resolution step from AI Committee */}
+              {hasCommittee && (
+                <details key="step_escalate" className="rounded-lg border border-violet-500/30 bg-violet-500/5">
+                  <summary className="p-3 cursor-pointer text-xs flex items-center gap-2">
+                    <ChevronRight className="h-3 w-3 shrink-0 transition-transform [[open]>&]:rotate-90" />
+                    <span className="font-mono text-muted-foreground">step_{String(reasoning.steps.length + 1).padStart(3, "0")}</span>
+                    <Badge variant="outline" className="text-[10px] bg-violet-500/10 text-violet-400">escalate</Badge>
+                    <span className="flex-1 truncate text-muted-foreground">{committee.ai_committee_outcome}</span>
+                    {committee.ai_committee_confidence != null && (
+                      <span className="text-[10px] font-mono shrink-0 text-violet-400">
+                        conf {committee.ai_committee_confidence.toFixed(2)}
+                      </span>
+                    )}
+                  </summary>
+                  <div className="px-3 pb-3 text-xs text-muted-foreground space-y-1 border-t border-violet-500/20 pt-2">
+                    {committee.ai_committee_reasoning && (
+                      <p><span className="font-medium">Reasoning:</span> {committee.ai_committee_reasoning}</p>
+                    )}
+                  </div>
+                </details>
+              )}
             </div>
           </CardContent>
         </Card>
