@@ -416,6 +416,13 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
               </div>
             )}
 
+            {hasCommittee && committee.ai_committee_reasoning && (
+              <div className="rounded-lg bg-muted/20 p-3 mb-4">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Escalation Reasoning</p>
+                <p className="text-sm text-muted-foreground">{committee.ai_committee_reasoning}</p>
+              </div>
+            )}
+
             <div className="space-y-2">
               {reasoning.steps.map((step: any) => (
                 <details key={step.step_id} className="rounded-lg border border-border/50 bg-muted/10">
@@ -446,19 +453,19 @@ export function AiResultDetail({ aiResult, aiPrompt, resolveReasoning }: Props) 
 
               {/* Escalated resolution step from AI Committee */}
               {hasCommittee && (
-                <details key="step_escalate" className="rounded-lg border border-violet-500/30 bg-violet-500/5">
+                <details key="step_escalate" className="rounded-lg border border-border/50 bg-muted/10">
                   <summary className="p-3 cursor-pointer text-xs flex items-center gap-2">
                     <ChevronRight className="h-3 w-3 shrink-0 transition-transform [[open]>&]:rotate-90" />
                     <span className="font-mono text-muted-foreground">step_{String(reasoning.steps.length + 1).padStart(3, "0")}</span>
-                    <Badge variant="outline" className="text-[10px] bg-violet-500/10 text-violet-400">escalate</Badge>
+                    <Badge variant="outline" className="text-[10px]">escalate</Badge>
                     <span className="flex-1 truncate text-muted-foreground">{committee.ai_committee_outcome}</span>
                     {committee.ai_committee_confidence != null && (
-                      <span className="text-[10px] font-mono shrink-0 text-violet-400">
+                      <span className="text-[10px] font-mono shrink-0 text-muted-foreground">
                         conf {committee.ai_committee_confidence.toFixed(2)}
                       </span>
                     )}
                   </summary>
-                  <div className="px-3 pb-3 text-xs text-muted-foreground space-y-1 border-t border-violet-500/20 pt-2">
+                  <div className="px-3 pb-3 text-xs text-muted-foreground space-y-1 border-t border-border/30 pt-2">
                     {committee.ai_committee_reasoning && (
                       <p><span className="font-medium">Reasoning:</span> {committee.ai_committee_reasoning}</p>
                     )}
